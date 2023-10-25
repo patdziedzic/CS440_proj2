@@ -2,9 +2,8 @@ import java.util.ArrayList;
 
 public class Ship {
     //the ship layout - 2D array of Cell objects
-    public static final int D = 100;
-    public static Cell[][] ship;
-    public static Cell initial;
+    public static final int D = 50;
+    private static Cell[][] ship;
 
 
     /**
@@ -22,7 +21,6 @@ public class Ship {
         //open the initial cell
         int row = Main.rand(0, D-1);
         int col = Main.rand(0, D-1);
-        initial = openCell(ship[row][col]);
 
         openBlockedCandidates();
         openDeadEnds();
@@ -158,7 +156,7 @@ public class Ship {
     /**
      * Opens a cell
      */
-    private static Cell openCell(Cell cell) {
+    private static void openCell(Cell cell) {
         //open the given cell
         cell.isOpen = true;
 
@@ -171,8 +169,6 @@ public class Ship {
         changeNumOpenNeighbors(cell.getRow(), cell.getCol() - 1);
         //right
         changeNumOpenNeighbors(cell.getRow(), cell.getCol() + 1);
-
-        return cell;
     }
 
     /**
@@ -182,5 +178,52 @@ public class Ship {
         try {
             ship[row][col].incNumOpenNeighbors();
         } catch (ArrayIndexOutOfBoundsException ignore) { }
+    }
+
+
+
+    /**
+     * Perform a deep copy of the ship
+     * @return the copy of the ship
+     */
+    public static Cell[][] copyShip() {
+        Cell[][] newShip = new Cell[D][D];
+        for (int i = 0; i < ship.length; i++){
+            for (int j = 0; j < ship[0].length; j++){
+                newShip[i][j] = new Cell(ship[i][j]);
+            }
+        }
+        for (int r = 0; r < D; r++) {
+            for (int c = 0; c < D; c++) {
+                newShip[r][c].setNeighbors(newShip);
+            }
+        }
+        return newShip;
+    }
+
+    /**
+     * Print the ship
+     */
+    public static void printShip() {
+        System.out.println("x| 0 1 2 3 4 5 6 7 8 9");
+        System.out.println(" ---------------------");
+        for (int r = 0; r < D; r++) {
+            System.out.print(r + "| ");
+            for (int c = 0; c < D; c++) {
+                if (ship[r][c].isOpen) {
+                    if (ship[r][c].isBot)
+                        System.out.print('B');
+                    else if (ship[r][c].isLeak)
+                        System.out.print('L');
+                    else
+                        System.out.print(1);
+                }
+                else
+                    System.out.print(0);
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
+        System.out.println("\n\n");
     }
 }

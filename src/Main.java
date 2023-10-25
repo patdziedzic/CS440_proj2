@@ -1,8 +1,14 @@
 import java.util.*;
 
 public class Main {
-    public static double q;
-    private static final int numTests = 400;
+    private static final int numTests = 1;
+    public static int k; //size of detection square - (2k+1) x (2k+1), k >= 1
+    //^ for a 50x50 ship, 1 <= k <= 24 because max square can be 49x49
+    public static double alpha; //accuracy of probabilistic sensor (smaller = more accurate), 0 < alpha < 1
+
+
+    //SHIP
+    private static Cell[][] ship;
     private static ArrayList<Cell> openCells = new ArrayList<>();
 
 
@@ -14,96 +20,115 @@ public class Main {
         return (int) ((Math.random() * (max - min)) + min);
     }
 
-    /**
-     * Check the distance from bot to button and fire to button.
-     * @return true if the bot is closer to the button than the fire
-     */
-    private static boolean checkDistBotVsFire(Cell bot, Cell fire, Cell button, Cell[][] ship) {
-        //BFS Shortest Path from bot -> button
-        LinkedList<Cell> shortestPath_Bot = Bfs.shortestPathBFS(bot, button, ship);
-        //BFS Shortest Path from fire -> button
-        LinkedList<Cell> shortestPath_Fire = Bfs.shortestPathBFS(fire, button, ship);
-        try {
-            return shortestPath_Bot.size() <= shortestPath_Fire.size();
-        }
-        catch (NullPointerException e) { return false; }
-    }
 
-    /**
-     * Try to ignite the given neighbor of a fire cell
-     */
-    private static void tryFireNeighbor(Cell neighbor, LinkedList<Cell> fireCells) {
-        if (neighbor != null && Math.random() <= neighbor.flammability && neighbor.isOpen && !neighbor.getOnFire()) {
-            neighbor.setOnFire(true);
-            fireCells.add(neighbor);
-        }
-    }
-
+    // ******************** DETERMINISTIC LEAK DETECTORS ********************
 
     /**
      * Run an experiment for Bot 1
-     * @return true if the bot made it to the button
+     * @return number of actions taken (moves + sensing) to plug the leak
      */
-    private static Boolean runBot1(Cell[][] ship) {
+    private static Integer runBot1() {
+        Integer numActions = 0;
+
         //initialize the bot
-        int randIndex = Main.rand(0, openCells.size()-1);
+        int randIndex = rand(0, openCells.size()-1);
         Cell bot = openCells.get(randIndex);
         bot.isBot = true;
+        LinkedList<Cell> detSquare = getDetectionSquare(bot);
 
-        //initialize the button
-        randIndex = Main.rand(0, openCells.size()-1);
-        Cell button = openCells.get(randIndex);
-        button.isButton = true;
+        //initialize the leak
+        Cell leak = null;
+        //the leak must initially be placed in a random open cell outside of the detection square
+        while (leak == null) {
+            randIndex = rand(0, openCells.size() - 1);
+            Cell tempLeak = openCells.get(randIndex);
 
-        if (bot.isButton)
-            return null;
-
-        //initialize the fire
-        LinkedList<Cell> fireCells = new LinkedList<>();
-        randIndex = Main.rand(0, openCells.size()-1);
-        Cell initialFire = openCells.get(randIndex);
-        initialFire.setOnFire(true); //setting on fire automatically updates neighbors
-        fireCells.add(initialFire);
-
-        if (bot.getOnFire() || button.getOnFire())
-            return null;
-
-        if(checkDistBotVsFire(bot, initialFire, button, ship))
-            return null;
-
-        //BFS Shortest Path from bot -> button
-        LinkedList<Cell> shortestPath = Bfs.shortestPathBFS(bot, button, ship);
-        if (shortestPath == null)
-            return null;
-
-        shortestPath.removeFirst();
-
-        while (!shortestPath.isEmpty()) {
-            //move the bot
-            Cell neighbor = shortestPath.removeFirst();
-            bot.isBot = false;
-            neighbor.isBot = true;
-            bot = neighbor;
-
-            if (bot.isButton)
-                return true;
-            else {
-                //else, potentially advance fire
-                LinkedList<Cell> copyFireCells = (LinkedList<Cell>) fireCells.clone();
-                while (!copyFireCells.isEmpty()) {
-                    Cell fireCell = copyFireCells.removeFirst();
-                    tryFireNeighbor(fireCell.up, fireCells);
-                    tryFireNeighbor(fireCell.down, fireCells);
-                    tryFireNeighbor(fireCell.left, fireCells);
-                    tryFireNeighbor(fireCell.right, fireCells);
+            boolean found = false;
+            for (Cell cell : detSquare) {
+                if (cell.equals(tempLeak)) {
+                    found = true;
+                    break;
                 }
+            }
+            if (!found) leak = tempLeak;
+        }
+        leak.isLeak = true;
 
-                if (bot.getOnFire() || button.getOnFire())
-                    return false;
+        bot.noLeak = true;
+        for (Cell cell : detSquare) cell.noLeak = true;
+
+        while (!bot.isLeak) {
+            //BFS Shortest Path from bot -> nearest potential leak
+            LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
+            if (shortestPath == null) return null;
+            shortestPath.removeFirst();
+
+            //move the bot to the nearest potential leak
+            while (shortestPath != null) {
+                Cell neighbor = shortestPath.removeFirst();
+                bot.isBot = false;
+                neighbor.isBot = true;
+                bot = neighbor;
+                numActions++;
+            }
+            if (bot.isLeak) return numActions;
+            else bot.noLeak = true;
+
+            //Sense Action
+            detSquare = getDetectionSquare(bot);
+            if (!leakInSquare(detSquare)) {
+                for (Cell cell : detSquare) cell.noLeak = true;
+            }
+            else {
+                //leak detected
+                for (int r = 0; r < Ship.D; r++) {
+                    for (int c = 0; c < Ship.D; c++) {
+                        Cell curr = ship[r][c];
+                        if (!detSquare.contains(curr)) curr.noLeak = true;
+                    }
+                }
+            }
+
+            // THIS IS WHERE I STOPPED CODING *******************************************
+
+        }
+        return numActions;
+    }
+
+    /**
+     * Deterministic Sense Action - Get all cells in the detection square
+     * @return linked list of cells in the square
+     */
+    private static LinkedList<Cell> getDetectionSquare(Cell bot) {
+        LinkedList<Cell> detSquare = new LinkedList<>();
+
+        int bRow = bot.getRow();
+        int bCol = bot.getCol();
+        for (int r = bRow - k; r <= bRow + k; r++) {
+            for (int c = bCol - k; c <= bCol + k; c++) {
+                try {
+                    Cell curr = ship[r][c];
+                    if (curr != null && curr.isOpen)
+                        detSquare.add(curr);
+                }
+                catch (ArrayIndexOutOfBoundsException ignore){}
             }
         }
-        return null;
+        return detSquare;
     }
+
+    /**
+     * Given a detection square, check if a leak was detected
+     * @return true if a leak was detected
+     */
+    private static boolean leakInSquare(LinkedList<Cell> detSquare) {
+        for (Cell cell : detSquare) {
+            if (cell.isLeak) return true;
+        }
+        return false;
+    }
+
+
 
     /**
      * Run an experiment for Bot 2
@@ -111,12 +136,12 @@ public class Main {
      */
     private static Boolean runBot2(Cell[][] ship) {
         //initialize the bot
-        int randIndex = Main.rand(0, openCells.size()-1);
+        int randIndex = rand(0, openCells.size()-1);
         Cell bot = openCells.get(randIndex);
         bot.isBot = true;
 
         //initialize the button
-        randIndex = Main.rand(0, openCells.size()-1);
+        randIndex = rand(0, openCells.size()-1);
         Cell button = openCells.get(randIndex);
         button.isButton = true;
 
@@ -125,7 +150,7 @@ public class Main {
 
         //initialize the fire
         LinkedList<Cell> fireCells = new LinkedList<>();
-        randIndex = Main.rand(0, openCells.size()-1);
+        randIndex = rand(0, openCells.size()-1);
         Cell initialFire = openCells.get(randIndex);
         initialFire.setOnFire(true); //setting on fire automatically updates neighbors
         fireCells.add(initialFire);
@@ -176,12 +201,12 @@ public class Main {
      */
     private static Boolean runBot3(Cell[][] ship) {
         //initialize the bot
-        int randIndex = Main.rand(0, openCells.size()-1);
+        int randIndex = rand(0, openCells.size()-1);
         Cell bot = openCells.get(randIndex);
         bot.isBot = true;
 
         //initialize the button
-        randIndex = Main.rand(0, openCells.size()-1);
+        randIndex = rand(0, openCells.size()-1);
         Cell button = openCells.get(randIndex);
         button.isButton = true;
 
@@ -190,7 +215,7 @@ public class Main {
 
         //initialize the fire
         LinkedList<Cell> fireCells = new LinkedList<>();
-        randIndex = Main.rand(0, openCells.size()-1);
+        randIndex = rand(0, openCells.size()-1);
         Cell initialFire = openCells.get(randIndex);
         initialFire.setOnFire(true); //setting on fire automatically updates neighbors
         fireCells.add(initialFire);
@@ -249,7 +274,7 @@ public class Main {
      */
     private static boolean runSimulation_Bot4(Cell ogBot, Cell ogButton, LinkedList<Cell> ogFireCells, Cell[][] ogShip) {
         //make copies
-        Cell[][] ship = copyShip(ogShip);
+        Cell[][] ship = Ship.copyShip(ogShip);
         Cell bot = ship[ogBot.getRow()][ogBot.getCol()];
         Cell button = ship[ogButton.getRow()][ogButton.getCol()];
         LinkedList<Cell> fireCells = new LinkedList<>();
@@ -349,12 +374,12 @@ public class Main {
      */
     private static Boolean runBot4(Cell[][] ship) {
         //initialize the bot
-        int randIndex = Main.rand(0, openCells.size() - 1);
+        int randIndex = rand(0, openCells.size() - 1);
         Cell bot = openCells.get(randIndex);
         bot.isBot = true;
 
         //initialize the button
-        randIndex = Main.rand(0, openCells.size() - 1);
+        randIndex = rand(0, openCells.size() - 1);
         Cell button = openCells.get(randIndex);
         button.isButton = true;
 
@@ -363,7 +388,7 @@ public class Main {
 
         //initialize the fire
         LinkedList<Cell> fireCells = new LinkedList<>();
-        randIndex = Main.rand(0, openCells.size() - 1);
+        randIndex = rand(0, openCells.size() - 1);
         Cell initialFire = openCells.get(randIndex);
         initialFire.setOnFire(true); //setting on fire automatically updates neighbors
         fireCells.add(initialFire);
@@ -408,51 +433,9 @@ public class Main {
     }
 
 
-    /**
-     * Perform a deep copy of the given ship
-     */
-    private static Cell[][] copyShip(Cell[][] ship) {
-        Cell[][] newShip = new Cell[Ship.D][Ship.D];
-        for (int i = 0; i < ship.length; i++){
-            for (int j = 0; j < ship[0].length; j++){
-                newShip[i][j] = new Cell(ship[i][j]);
-            }
-        }
-        for (int r = 0; r < Ship.D; r++) {
-            for (int c = 0; c < Ship.D; c++) {
-                newShip[r][c].setNeighbors(newShip);
-            }
-        }
-        return newShip;
-    }
 
-    /**
-     * Print the ship
-     */
-    private static void printShip(Cell[][] ship, Cell bot, Cell button, Cell fire) {
-        System.out.println("x| 0 1 2 3 4 5 6 7 8 9");
-        System.out.println(" ---------------------");
-        for (int r = 0; r < Ship.D; r++) {
-            System.out.print(r + "| ");
-            for (int c = 0; c < Ship.D; c++) {
-                if (ship[r][c].isOpen) {
-                    if (ship[r][c].isBot)
-                        System.out.print('s');
-                    else if (ship[r][c].isButton)
-                        System.out.print('g');
-                    else if (ship[r][c].getOnFire())
-                        System.out.print('f');
-                    else
-                        System.out.print(1);
-                }
-                else
-                    System.out.print(0);
-                System.out.print(" ");
-            }
-            System.out.println();
-        }
-        System.out.println("\n\n");
-    }
+
+
 
 
     /**
@@ -460,84 +443,81 @@ public class Main {
      * @param bot the bot number
      */
     private static void runTests(int bot) {
-        LinkedList<Boolean> testResults = new LinkedList<>();
+        LinkedList<Integer> testResults = new LinkedList<>();
         for (int test = 1; test <= numTests; test++) {
-            Cell[][] tempShip = Ship.makeShip();
+            ship = Ship.makeShip();
             openCells = new ArrayList<>();
-            for (int i = 0; i < tempShip.length; i++){
-                for (int j = 0; j < tempShip[0].length; j++){
-                    if (tempShip[i][j].isOpen)
-                        openCells.add(tempShip[i][j]);
+            for (int i = 0; i < Ship.D; i++){
+                for (int j = 0; j < Ship.D; j++){
+                    if (ship[i][j].isOpen)
+                        openCells.add(ship[i][j]);
                 }
             }
-            Boolean result = false;
-            if (bot == 1) {
-                result = runBot1(tempShip);
-            }
-            else if (bot == 2) {
-                result = runBot2(tempShip);
-            }
-            else if (bot == 3) {
-                result = runBot3(tempShip);
-            }
-            else if (bot == 4) {
-                result = runBot4(tempShip);
+            Integer result;
+            switch (bot) {
+                case 1 -> result = runBot1();
+                //case 2 -> result = runBot2(ship);
+                default -> result = 0;
             }
 
-            if (result == null) //if null, forget this test (bot just got lucky or unlucky)
+            if (result == null) //if null, forget this test
                 test--;
             else
                 testResults.add(result);
         }
-        if (bot == 4) System.out.println();
-        int totalWins = 0;
-        for (Boolean result : testResults) {
-            if (result)
-                totalWins++;
+
+        int totalActions = 0;
+        for (Integer result : testResults) {
+            if (result != null)
+                totalActions += result;
+        }
+        double avg = totalActions * 100.0 / numTests;
+
+        switch (bot) {
+            case 1, 2, 5, 6 ->
+                    System.out.println("Avg Actions Taken for k = " + k + " is " + avg);
+            case 3, 4, 7, 8, 9 ->
+                    System.out.println("Avg Actions Taken for alpha = " + alpha + " is " + avg);
+            default -> System.out.println("Bot number out of range.");
         }
 
-        double avg = totalWins * 100.0 / numTests;
-        System.out.println("Avg Success Rate for q = " + q + " is " + avg);
     }
 
     /**
      * Main driver method to run the tests for each bot
      */
     public static void main(String[] args) {
-        //BOT 1
+        //PART 1 - DETERMINISTIC LEAK DETECTORS
+        //Bot 1
         System.out.println("Bot 1");
-        q = 0.1; runTests(1);
-        q = 0.25; runTests(1);
-        q = 0.50; runTests(1);
-        q = 0.75; runTests(1);
-        q = 0.9; runTests(1);
+        k = 10; runTests(1);
         System.out.println();
 
-        //BOT 2
-        System.out.println("Bot 2");
-        q = 0.1; runTests(2);
-        q = 0.25; runTests(2);
-        q = 0.50; runTests(2);
-        q = 0.75; runTests(2);
-        q = 0.9; runTests(2);
-        System.out.println();
+        //Bot 2
 
-        //BOT 3
-        System.out.println("Bot 3");
-        q = 0.1; runTests(3);
-        q = 0.25; runTests(3);
-        q = 0.50; runTests(3);
-        q = 0.75; runTests(3);
-        q = 0.9; runTests(3);
-        System.out.println();
 
-        //BOT 4
-        System.out.println("Bot 4");
-        q = 0.1; runTests(4);
-        q = 0.25; runTests(4);
-        q = 0.50; runTests(4);
-        q = 0.75; runTests(4);
-        q = 0.9; runTests(4);
-        System.out.println();
+
+        //PART 2 - PROBABILISTIC LEAK DETECTORS
+        //Bot 3
+
+
+        //Bot 4
+
+
+
+        //PART 3 - MULTIPLE LEAKS
+        //Bot 5
+
+
+        //Bot 6
+
+
+        //Bot 7
+
+
+        //Bot 8
+
+
+        //Bot 9
     }
 }

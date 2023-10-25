@@ -15,16 +15,17 @@ public class Cell {
     public Cell left;
     public Cell right;
     public LinkedList<Cell> neighbors;
-    public boolean isVisited;
+
 
     //IDENTITY
     public boolean isBot;
-    public boolean isButton;
+    public boolean isLeak;
+    public boolean noLeak; //true if there is definitely no leak, false if there might be a leak
 
-    //FLAMMABILITY
-    private boolean onFire;
-    public double flammability; //flammability of the cell based on neighbors
-    public int k; //number of fire neighbors
+    //PROBABILITIES
+    private double probLeak; //P(Leak) which is updated to P(L|B) or P(L|~B) each sense action
+    private double beepProb; //P(Beep in cell i | Leak in cell j)
+
 
     /**
      * Cell Constructor given row and col
@@ -35,12 +36,11 @@ public class Cell {
         this.numOpenNeighbors = 0;
         this.isOpen = false;
         this.neighbors = new LinkedList<>();
-        this.onFire = false;
-        this.k = 0;
-        this.flammability = 1-Math.pow((1-Main.q),k);
         this.isBot = false;
-        this.isButton = false;
-        this.isVisited = false;
+        this.isLeak = false;
+        this.noLeak = false;
+        this.probLeak = 0.0;
+        this.beepProb = 0.0;
     }
 
     /**
@@ -57,12 +57,11 @@ public class Cell {
             this.left = null;
             this.right = null;
             this.neighbors = new LinkedList<>();
-            this.isVisited = cell.isVisited;
             this.isBot = cell.isBot;
-            this.isButton = cell.isButton;
-            this.onFire = cell.getOnFire();
-            this.flammability = cell.flammability;
-            this.k = cell.k;
+            this.isLeak = cell.isLeak;
+            this.noLeak = cell.noLeak;
+            this.probLeak = cell.probLeak;
+            this.beepProb = cell.beepProb;
         }
     }
 
@@ -100,35 +99,26 @@ public class Cell {
         } catch (ArrayIndexOutOfBoundsException ignore){}
     }
 
-    /**
-     * Increment k (the number of fire neighbors) by 1 and adjust flammability
-     */
-    public void incK() {
-        k++;
-        flammability = 1 - Math.pow((1 - Main.q), k);
+    public double getProbLeak() {
+        return probLeak;
     }
 
-    public boolean getOnFire() {
-        return onFire;
+    public void setProbLeak(double probLeak) {
+        this.probLeak = probLeak;
     }
 
-    /**
-     * If set cell on fire to true, update the neighbors automatically
-     * @param value the
-     */
-    public void setOnFire(boolean value) {
-        onFire = value;
-        if (value) {
-            if(up != null)
-                up.incK();
-            if(down != null)
-                down.incK();
-            if(left != null)
-                left.incK();
-            if(right != null)
-                right.incK();
-        }
+    public double getBeepProb() {
+        return beepProb;
     }
+
+    //P(B|L) = e ^ [ -alpha * (d(i,j) - 1) ]
+    public void setBeepProb(double alpha, int d) {
+        double exponent = -1 * alpha * (d - 1);
+        this.beepProb = Math.exp(exponent);
+    }
+
+
+
 
     /**
      * Two Cells are equal if they have the same row and col
