@@ -21,6 +21,7 @@ public class Ship {
         //open the initial cell
         int row = Main.rand(0, D-1);
         int col = Main.rand(0, D-1);
+        openCell(ship[row][col]);
 
         openBlockedCandidates();
         openDeadEnds();
@@ -186,7 +187,7 @@ public class Ship {
      * Perform a deep copy of the ship
      * @return the copy of the ship
      */
-    public static Cell[][] copyShip() {
+    public static Cell[][] copyShip(Cell[][] ship) {
         Cell[][] newShip = new Cell[D][D];
         for (int i = 0; i < ship.length; i++){
             for (int j = 0; j < ship[0].length; j++){
@@ -204,7 +205,7 @@ public class Ship {
     /**
      * Print the ship
      */
-    public static void printShip() {
+    public static void printShip(Cell[][] ship) {
         System.out.println("x| 0 1 2 3 4 5 6 7 8 9");
         System.out.println(" ---------------------");
         for (int r = 0; r < D; r++) {
@@ -215,8 +216,10 @@ public class Ship {
                         System.out.print('B');
                     else if (ship[r][c].isLeak)
                         System.out.print('L');
+                    else if (ship[r][c].noLeak)
+                        System.out.print('N');
                     else
-                        System.out.print(1);
+                        System.out.print('m');
                 }
                 else
                     System.out.print(0);

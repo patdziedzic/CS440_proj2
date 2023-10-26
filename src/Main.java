@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class Main {
-    private static final int numTests = 1;
+    private static final int numTests = 50;
     public static int k; //size of detection square - (2k+1) x (2k+1), k >= 1
     //^ for a 50x50 ship, 1 <= k <= 24 because max square can be 49x49
     public static double alpha; //accuracy of probabilistic sensor (smaller = more accurate), 0 < alpha < 1
@@ -57,6 +57,8 @@ public class Main {
         bot.noLeak = true;
         for (Cell cell : detSquare) cell.noLeak = true;
 
+        //Ship.printShip(ship);
+
         while (!bot.isLeak) {
             //BFS Shortest Path from bot -> nearest potential leak
             LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
@@ -64,7 +66,7 @@ public class Main {
             shortestPath.removeFirst();
 
             //move the bot to the nearest potential leak
-            while (shortestPath != null) {
+            while (!shortestPath.isEmpty()) {
                 Cell neighbor = shortestPath.removeFirst();
                 bot.isBot = false;
                 neighbor.isBot = true;
@@ -76,11 +78,13 @@ public class Main {
 
             //Sense Action
             detSquare = getDetectionSquare(bot);
+            numActions++;
             if (!leakInSquare(detSquare)) {
+                //set noLeak = true for everything in the square
                 for (Cell cell : detSquare) cell.noLeak = true;
             }
             else {
-                //leak detected
+                //leak detected --> set noLeak = true for everything outside the square
                 for (int r = 0; r < Ship.D; r++) {
                     for (int c = 0; c < Ship.D; c++) {
                         Cell curr = ship[r][c];
@@ -88,9 +92,6 @@ public class Main {
                     }
                 }
             }
-
-            // THIS IS WHERE I STOPPED CODING *******************************************
-
         }
         return numActions;
     }
@@ -130,313 +131,6 @@ public class Main {
 
 
 
-    /**
-     * Run an experiment for Bot 2
-     * @return true if the bot made it to the button
-     */
-    private static Boolean runBot2(Cell[][] ship) {
-        //initialize the bot
-        int randIndex = rand(0, openCells.size()-1);
-        Cell bot = openCells.get(randIndex);
-        bot.isBot = true;
-
-        //initialize the button
-        randIndex = rand(0, openCells.size()-1);
-        Cell button = openCells.get(randIndex);
-        button.isButton = true;
-
-        if (bot.isButton)
-            return null;
-
-        //initialize the fire
-        LinkedList<Cell> fireCells = new LinkedList<>();
-        randIndex = rand(0, openCells.size()-1);
-        Cell initialFire = openCells.get(randIndex);
-        initialFire.setOnFire(true); //setting on fire automatically updates neighbors
-        fireCells.add(initialFire);
-
-        if (bot.getOnFire() || button.getOnFire())
-            return null;
-
-        if(checkDistBotVsFire(bot, initialFire, button, ship))
-            return null;
-
-        while (!bot.isButton && !bot.getOnFire() && !button.getOnFire()) {
-            //BFS Shortest Path from bot -> button
-            LinkedList<Cell> shortestPath = Bfs.shortestPathBFS(bot, button, ship);
-            if (shortestPath == null)
-                return false;
-
-            shortestPath.removeFirst();
-
-            //move the bot
-            Cell neighbor = shortestPath.removeFirst();
-            bot.isBot = false;
-            neighbor.isBot = true;
-            bot = neighbor;
-
-            if (bot.isButton)
-                return true;
-            else {
-                //else, potentially advance fire
-                LinkedList<Cell> copyFireCells = (LinkedList<Cell>) fireCells.clone();
-                while (!copyFireCells.isEmpty()) {
-                    Cell fireCell = copyFireCells.removeFirst();
-                    tryFireNeighbor(fireCell.up, fireCells);
-                    tryFireNeighbor(fireCell.down, fireCells);
-                    tryFireNeighbor(fireCell.left, fireCells);
-                    tryFireNeighbor(fireCell.right, fireCells);
-                }
-
-                if (bot.getOnFire() || button.getOnFire())
-                    return false;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Run an experiment for Bot 3
-     * @return true if the bot made it to the button
-     */
-    private static Boolean runBot3(Cell[][] ship) {
-        //initialize the bot
-        int randIndex = rand(0, openCells.size()-1);
-        Cell bot = openCells.get(randIndex);
-        bot.isBot = true;
-
-        //initialize the button
-        randIndex = rand(0, openCells.size()-1);
-        Cell button = openCells.get(randIndex);
-        button.isButton = true;
-
-        if (bot.isButton)
-            return null;
-
-        //initialize the fire
-        LinkedList<Cell> fireCells = new LinkedList<>();
-        randIndex = rand(0, openCells.size()-1);
-        Cell initialFire = openCells.get(randIndex);
-        initialFire.setOnFire(true); //setting on fire automatically updates neighbors
-        fireCells.add(initialFire);
-
-        if (bot.getOnFire() || button.getOnFire())
-            return null;
-
-        if(checkDistBotVsFire(bot, initialFire, button, ship))
-            return null;
-
-
-        while (!bot.isButton && !bot.getOnFire() && !button.getOnFire()) {
-            //BFS Shortest Path from bot -> button
-            LinkedList<Cell> shortestPath;
-
-            //Avoid fire neighbors if possible
-            shortestPath = Bfs.shortestPathBFS_Bot3(bot, button, ship);
-            if (shortestPath == null) {
-                //if not possible, do the Bot 2 method
-                shortestPath = Bfs.shortestPathBFS(bot, button, ship);
-                if (shortestPath == null)
-                    return false;
-            }
-            shortestPath.removeFirst();
-
-            //move the bot
-            Cell neighbor = shortestPath.removeFirst();
-            bot.isBot = false;
-            neighbor.isBot = true;
-            bot = neighbor;
-
-            if (bot.isButton)
-                return true;
-            else {
-                //else, potentially advance fire
-                LinkedList<Cell> copyFireCells = (LinkedList<Cell>) fireCells.clone();
-                while (!copyFireCells.isEmpty()) {
-                    Cell fireCell = copyFireCells.removeFirst();
-                    tryFireNeighbor(fireCell.up, fireCells);
-                    tryFireNeighbor(fireCell.down, fireCells);
-                    tryFireNeighbor(fireCell.left, fireCells);
-                    tryFireNeighbor(fireCell.right, fireCells);
-                }
-
-                if (bot.getOnFire() || button.getOnFire())
-                    return false;
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * Run a simulation for a neighbor of the bot in Bot 4 using Bot 1 logic
-     * @return true if the neighbor made it to the button in the simulation
-     */
-    private static boolean runSimulation_Bot4(Cell ogBot, Cell ogButton, LinkedList<Cell> ogFireCells, Cell[][] ogShip) {
-        //make copies
-        Cell[][] ship = Ship.copyShip(ogShip);
-        Cell bot = ship[ogBot.getRow()][ogBot.getCol()];
-        Cell button = ship[ogButton.getRow()][ogButton.getCol()];
-        LinkedList<Cell> fireCells = new LinkedList<>();
-        for (Cell ogFireCell : ogFireCells) {
-            fireCells.add(ship[ogFireCell.getRow()][ogFireCell.getCol()]);
-        }
-
-        //BFS Shortest Path from bot -> button
-        LinkedList<Cell> shortestPath = Bfs.shortestPathBFS(bot, button, ship);
-        if (shortestPath == null)
-            return false;
-
-        shortestPath.removeFirst();
-
-        while (!bot.isButton && !bot.getOnFire() && !button.getOnFire()) {
-            //move the bot
-            Cell neighbor = shortestPath.removeFirst();
-            bot.isBot = false;
-            neighbor.isBot = true;
-            bot = neighbor;
-
-            if (bot.isButton)
-                return true;
-            else {
-                //else, potentially advance fire
-                LinkedList<Cell> copyFireCells = (LinkedList<Cell>) fireCells.clone();
-                while (!copyFireCells.isEmpty()) {
-                    Cell fireCell = copyFireCells.removeFirst();
-                    tryFireNeighbor(fireCell.up, fireCells);
-                    tryFireNeighbor(fireCell.down, fireCells);
-                    tryFireNeighbor(fireCell.left, fireCells);
-                    tryFireNeighbor(fireCell.right, fireCells);
-                }
-
-                if (bot.getOnFire() || button.getOnFire())
-                    return false;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Get the optimal path for the bot at the current time step.
-     * The path is optimal based on the number of simulations that won for each neighbor
-     * @return the optimal path linked list
-     */
-    private static LinkedList<Cell> getOptimalPath(Cell bot, Cell button, LinkedList<Cell> fireCells, Cell[][] ship) {
-        PriorityQueue<PQCell> pq = new PriorityQueue<>();
-        HashMap<Cell, Integer> distTo = new HashMap<>(); //key: curr, value: distance from bot to curr
-        HashMap<Cell, Cell> parent = new HashMap<>(); //key: child, value: parent
-
-        pq.add(new PQCell(bot, 0));
-        distTo.put(bot, 0);
-        parent.put(null, bot);
-
-        while (!pq.isEmpty()) {
-            Cell curr = pq.remove().cell;
-
-            //if button is found, return
-            if (curr.isButton) {
-                LinkedList<Cell> optimalPath = new LinkedList<>();
-                Cell ptr = button;
-                while (ptr != null) {
-                    optimalPath.add(ptr);
-                    ptr = parent.get(ptr);
-                }
-                Collections.reverse(optimalPath);
-                return optimalPath;
-            }
-
-            for (Cell neighbor : curr.neighbors) {
-                if (neighbor != null && Bfs.shortestPathBFS(neighbor, button, ship) != null && neighbor.isOpen && !neighbor.getOnFire()) {
-                    int tempDist = distTo.get(curr) + 1;
-                    if (!distTo.containsKey(neighbor) || tempDist < distTo.get(neighbor)) {
-                        distTo.put(neighbor, tempDist);
-                        parent.put(neighbor, curr);
-
-                        //RUN SIMULATIONS
-                        int wins = 0;
-                        int numSimulations = 4;
-                        for (int i = 0; i < numSimulations; i ++) {
-                            if (runSimulation_Bot4(neighbor, button, fireCells, ship))
-                                wins++;
-                        }
-
-                        pq.add(new PQCell(neighbor, distTo.get(neighbor) + wins));
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Run an experiment for Bot 4
-     * @return true if the bot made it to the button
-     */
-    private static Boolean runBot4(Cell[][] ship) {
-        //initialize the bot
-        int randIndex = rand(0, openCells.size() - 1);
-        Cell bot = openCells.get(randIndex);
-        bot.isBot = true;
-
-        //initialize the button
-        randIndex = rand(0, openCells.size() - 1);
-        Cell button = openCells.get(randIndex);
-        button.isButton = true;
-
-        if (bot.isButton)
-            return null;
-
-        //initialize the fire
-        LinkedList<Cell> fireCells = new LinkedList<>();
-        randIndex = rand(0, openCells.size() - 1);
-        Cell initialFire = openCells.get(randIndex);
-        initialFire.setOnFire(true); //setting on fire automatically updates neighbors
-        fireCells.add(initialFire);
-
-        if (bot.getOnFire() || button.getOnFire())
-            return null;
-
-        if(checkDistBotVsFire(bot, initialFire, button, ship))
-            return null;
-
-        while (!bot.isButton && !bot.getOnFire() && !button.getOnFire()) {
-            LinkedList<Cell> optimalPath = getOptimalPath(bot, button, fireCells, ship);
-            if (optimalPath == null)
-                return false;
-
-            optimalPath.removeFirst();
-
-            //move the bot
-            Cell neighbor = optimalPath.removeFirst();
-            bot.isBot = false;
-            neighbor.isBot = true;
-            bot = neighbor;
-
-            if (bot.isButton)
-                return true;
-            else {
-                //else, potentially advance fire
-                LinkedList<Cell> copyFireCells = (LinkedList<Cell>) fireCells.clone();
-                while (!copyFireCells.isEmpty()) {
-                    Cell fireCell = copyFireCells.removeFirst();
-                    tryFireNeighbor(fireCell.up, fireCells);
-                    tryFireNeighbor(fireCell.down, fireCells);
-                    tryFireNeighbor(fireCell.left, fireCells);
-                    tryFireNeighbor(fireCell.right, fireCells);
-                }
-
-                if (bot.getOnFire() || button.getOnFire())
-                    return false;
-            }
-        }
-        return null;
-    }
-
-
-
-
-
-
 
     /**
      * Run tests on the given bot number
@@ -459,6 +153,8 @@ public class Main {
                 //case 2 -> result = runBot2(ship);
                 default -> result = 0;
             }
+
+            //Ship.printShip(ship);
 
             if (result == null) //if null, forget this test
                 test--;
@@ -490,7 +186,12 @@ public class Main {
         //PART 1 - DETERMINISTIC LEAK DETECTORS
         //Bot 1
         System.out.println("Bot 1");
+        k = 1; runTests(1);
+        k = 5; runTests(1);
         k = 10; runTests(1);
+        k = 15; runTests(1);
+        k = 18; runTests(1);
+        k = 24; runTests(1);
         System.out.println();
 
         //Bot 2
