@@ -48,6 +48,8 @@ public class DeterministicBots extends Main {
             }
             shortestPath.removeFirst();
 
+            //System.out.println(numActions);
+
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
             if (bot.isLeak) return;
@@ -130,6 +132,8 @@ public class DeterministicBots extends Main {
         return false;
     }
 
+
+
     /**
      * Run an experiment for Bot 2
      */
@@ -144,7 +148,7 @@ public class DeterministicBots extends Main {
         Cell leak = null;
         //the leak must initially be placed in a random open cell outside of the detection square
         while (leak == null) {
-            randIndex = rand(0, openCells.size() - 1);
+            randIndex = Main.rand(0, openCells.size() - 1);
             Cell tempLeak = openCells.get(randIndex);
 
             boolean found = false;
@@ -163,67 +167,32 @@ public class DeterministicBots extends Main {
 
         //Ship.printShip(ship);
 
-        //Check the 4 Quadrants
-        if (checkQuadrant(bot, 0, 0)) {
-            if (bot.isLeak) return;
-            else bot.noLeak = true;
-        }
-        else if (checkQuadrant(bot, 0, Ship.D - 1)) {
-            if (bot.isLeak) return;
-            else bot.noLeak = true;
-        }
-        else if (checkQuadrant(bot, Ship.D - 1, 0)) {
-            if (bot.isLeak) return;
-            else bot.noLeak = true;
-        }
-        else if (checkQuadrant(bot, Ship.D - 1, Ship.D - 1)) {
-            if (bot.isLeak) return;
-            else bot.noLeak = true;
-        }
-
         while (!bot.isLeak) {
-            //BFS Shortest Path from bot -> nearest potential leak
-            LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
+            LinkedList<Cell> shortestPath = null;
+            //BFS Shortest Path from bot -> nearest potential leak >= 2k cells away
+            shortestPath = Bfs.detSP_BFS_Bot2(bot);
             if (shortestPath == null) {
-                numActions = null;
-                return;
+                //BFS Shortest Path from bot -> nearest potential leak
+                shortestPath = Bfs.detSP_BFS(bot);
+                if (shortestPath == null) {
+                    numActions = null;
+                    return;
+                }
             }
             shortestPath.removeFirst();
 
+            //System.out.println(numActions);
+
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
+            Bfs.computeDistances(bot);
+
             if (bot.isLeak) return;
             else bot.noLeak = true;
 
             //Sense Action
             detSenseAction(bot);
         }
-    }
-
-    /**
-     * Go to the corner of the quadrant and perform a sense action
-     * @return true if the leak was detected
-     */
-    private static boolean checkQuadrant(Cell bot, int row, int col) {
-        Cell nearestOpen = null;
-        Cell cell = ship[row][col];
-        if (cell.isOpen) nearestOpen = cell;
-        else nearestOpen = Bfs.nearestOpen_BFS(cell);
-
-        LinkedList<Cell> shortestPath = Bfs.SP_BFS(bot, nearestOpen);
-        if (shortestPath == null) {
-            numActions = null;
-            return false;
-        }
-        shortestPath.removeFirst();
-
-        //move the bot to nearestOpen
-        bot = moveBot(bot, shortestPath);
-        if (bot.isLeak) return true;
-        else bot.noLeak = true;
-
-        //Sense Action
-        return detSenseAction(bot);
     }
 
 }

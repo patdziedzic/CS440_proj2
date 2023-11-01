@@ -21,6 +21,7 @@ public class Cell {
     public boolean isBot;
     public boolean isLeak;
     public boolean noLeak; //true if there is definitely no leak, false if there might be a leak
+    public int distFromBot;
 
     //PROBABILITIES
     private double probLeak; //P(Leak) which is updated to P(L|B) or P(L|~B) each sense action

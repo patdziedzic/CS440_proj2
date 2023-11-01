@@ -22,6 +22,14 @@ public class Main {
     }
 
     /**
+     * Get Euclidean distance between 2 Cells
+     */
+    public static double distFormula(Cell a, Cell b) {
+        return Math.sqrt(Math.pow(b.getRow()-a.getRow(), 2) + Math.pow(b.getCol()-a.getCol(), 2));
+    }
+
+
+    /**
      * Run tests on the given bot number
      * @param bot the bot number
      */
@@ -56,7 +64,7 @@ public class Main {
             if (result != null)
                 totalActions += result;
         }
-        double avg = totalActions * 100.0 / numTests;
+        double avg = totalActions / (double) numTests;
 
         switch (bot) {
             case 1, 2, 5, 6 ->
@@ -72,19 +80,56 @@ public class Main {
      * Main driver method to run the tests for each bot
      */
     public static void main(String[] args) {
+//        k = 1;
+//
+//        ship = Ship.makeShip();
+//        Cell[][] copyShip = Ship.copyShip(ship);
+//        openCells = new ArrayList<>();
+//        for (int i = 0; i < Ship.D; i++){
+//            for (int j = 0; j < Ship.D; j++){
+//                if (ship[i][j].isOpen)
+//                    openCells.add(ship[i][j]);
+//            }
+//        }
+//
+//        numActions = 0;
+//        DeterministicBots.runBot1();
+//        System.out.println(numActions);
+//
+//        numActions = 0;
+//        ship = copyShip;
+//        openCells = new ArrayList<>();
+//        for (int i = 0; i < Ship.D; i++){
+//            for (int j = 0; j < Ship.D; j++){
+//                if (ship[i][j].isOpen)
+//                    openCells.add(ship[i][j]);
+//            }
+//        }
+//        DeterministicBots.runBot2();
+//        System.out.println(numActions);
+
+
+
+
+
+
         //PART 1 - DETERMINISTIC LEAK DETECTORS
         //Bot 1
         System.out.println("Bot 1");
-        //k = 1; runTests(1);
-        //k = 5; runTests(1);
+        k = 1; runTests(1);
+        k = 5; runTests(1);
         k = 10; runTests(1);
-        //k = 15; runTests(1);
-        //k = 24; runTests(1);
+        k = 15; runTests(1);
+        k = 24; runTests(1);
         System.out.println();
 
         //Bot 2
         System.out.println("Bot 2");
+        k = 1; runTests(2);
+        k = 5; runTests(2);
         k = 10; runTests(2);
+        k = 15; runTests(2);
+        k = 24; runTests(2);
         System.out.println();
 
 

@@ -1,7 +1,4 @@
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 public class Bfs {
     private static boolean[][] visited; //2D array to keep track of visited cells
@@ -116,46 +113,92 @@ public class Bfs {
         return null;
     }
 
-
     /**
-     * Get the nearest open cell
+     * Deterministic Shortest Path BFS
+     * Goes to nearest potential leak cell that is 2k cells away (noLeak = false)
      */
-    public static Cell nearestOpen_BFS(Cell cell){
+    public static LinkedList<Cell> detSP_BFS_Bot2(Cell bot){
         visited = new boolean[Ship.D][Ship.D];
         Queue<Cell> Q = new LinkedList<>(); //tell us what to explore next
+        HashMap<Cell, Cell> parentNodes = new HashMap<>(); //keeps track of where bot has visited
+        //^ Map the previous to the next by using .put(next, previous)
 
-        Q.add(cell);
-        visited[cell.getRow()][cell.getCol()] = true;
+        Q.add(bot);
+        visited[bot.getRow()][bot.getCol()] = true;
+
+        Cell initialBot = bot;
+        double minDist = 2 * Math.sqrt(Math.pow(Main.k+1, 2) + Math.pow(Main.k+1, 2));
 
         while (!Q.isEmpty()) {
-            cell = Q.remove();
+            bot = Q.remove();
 
-            if(cell.isOpen) return cell;
+            if(!bot.noLeak && Main.distFormula(initialBot, bot) >= minDist) {
+                //Once path found, start from end and go back and store the path into LinkedList
+                LinkedList<Cell> shortestPath = new LinkedList<>();
+                Cell ptr = bot;
+                while (ptr != null) {
+                    shortestPath.add(ptr);
+                    ptr = parentNodes.get(ptr);
+                }
+                Collections.reverse(shortestPath);
+                return shortestPath;
+            }
 
-            if(isValid_NearestOpen(cell.up)) {
-                Q.add(cell.up);
-                visited[cell.up.getRow()][cell.up.getCol()] = true;
+            if(isValid(bot.up)) {
+                parentNodes.put(bot.up, bot);
+                Q.add(bot.up);
+                visited[bot.up.getRow()][bot.up.getCol()] = true;
             }
-            if(isValid_NearestOpen(cell.down)) {
-                Q.add(cell.down);
-                visited[cell.down.getRow()][cell.down.getCol()] = true;
+            if(isValid(bot.down)) {
+                parentNodes.put(bot.down, bot);
+                Q.add(bot.down);
+                visited[bot.down.getRow()][bot.down.getCol()] = true;
             }
-            if(isValid_NearestOpen(cell.left)) {
-                Q.add(cell.left);
-                visited[cell.left.getRow()][cell.left.getCol()] = true;
+            if(isValid(bot.left)) {
+                parentNodes.put(bot.left, bot);
+                Q.add(bot.left);
+                visited[bot.left.getRow()][bot.left.getCol()] = true;
             }
-            if(isValid_NearestOpen(cell.right)) {
-                Q.add(cell.right);
-                visited[cell.right.getRow()][cell.right.getCol()] = true;
+            if(isValid(bot.right)) {
+                parentNodes.put(bot.right, bot);
+                Q.add(bot.right);
+                visited[bot.right.getRow()][bot.right.getCol()] = true;
             }
         }
         return null;
     }
 
+
+
+
+
+
+
     /**
-     * Check if a neighbor is valid to search
+     * Dijkstra's Algorithm to compute the distances
      */
-    private static boolean isValid_NearestOpen(Cell c) {
-        return (c != null && !visited[c.getRow()][c.getCol()]);
+    public static void computeDistances(Cell bot){
+        visited = new boolean[Ship.D][Ship.D];
+        PriorityQueue<PQCell> pq = new PriorityQueue<>();
+
+        pq.add(new PQCell(bot, 0));
+        bot.distFromBot = 0;
+        visited[bot.getRow()][bot.getCol()] = true;
+
+        while (!pq.isEmpty()) {
+            Cell curr = pq.remove().cell;
+
+            for (Cell neighbor : curr.neighbors) {
+                if (neighbor != null && neighbor.isOpen) {
+                    int tempDist = curr.distFromBot + 1;
+                    if (!visited[neighbor.getRow()][neighbor.getCol()] || tempDist < neighbor.distFromBot) {
+                        neighbor.distFromBot = tempDist;
+                        pq.add(new PQCell(neighbor, tempDist));
+                        visited[neighbor.getRow()][neighbor.getCol()] = true;
+                    }
+                }
+            }
+        }
     }
+
 }
