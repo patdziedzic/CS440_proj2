@@ -113,9 +113,8 @@ public class Cell {
     }
 
     //P(B|L) = e ^ [ -alpha * (d(i,j) - 1) ]
-    public void setBeepProb(double alpha, int d) {
-        double exponent = -1 * alpha * (d - 1);
-        this.beepProb = Math.exp(exponent);
+    public void setBeepProb(Cell leak) {
+        this.beepProb = 1 / Math.exp(Main.alpha * (leak.distFromBot - 1));
     }
 
 

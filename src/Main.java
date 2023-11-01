@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class Main {
-    private static final int numTests = 50;
+    private static final int numTests = 1;
     public static int k; //size of detection square - (2k+1) x (2k+1), k >= 1
     //^ for a 50x50 ship, 1 <= k <= 24 because max square can be 49x49
     public static double alpha; //accuracy of probabilistic sensor (smaller = more accurate), 0 < alpha < 1
@@ -28,6 +28,21 @@ public class Main {
         return Math.sqrt(Math.pow(b.getRow()-a.getRow(), 2) + Math.pow(b.getCol()-a.getCol(), 2));
     }
 
+    /**
+     * Move the bot along the given path and increment numActions for each step
+     * @return the cell the bot ends up in
+     */
+    public static Cell moveBot(Cell bot, LinkedList<Cell> path) {
+        while (!path.isEmpty()) {
+            Cell neighbor = path.removeFirst();
+            bot.isBot = false;
+            neighbor.isBot = true;
+            bot = neighbor;
+            numActions++;
+        }
+        return bot;
+    }
+
 
     /**
      * Run tests on the given bot number
@@ -48,6 +63,7 @@ public class Main {
             switch (bot) {
                 case 1 -> DeterministicBots.runBot1();
                 case 2 -> DeterministicBots.runBot2();
+                case 3 -> ProbabilisticBots.runBot3();
                 default -> numActions = 0;
             }
 
@@ -112,7 +128,7 @@ public class Main {
 
 
 
-
+        /*
         //PART 1 - DETERMINISTIC LEAK DETECTORS
         //Bot 1
         System.out.println("Bot 1");
@@ -131,10 +147,13 @@ public class Main {
         k = 15; runTests(2);
         k = 24; runTests(2);
         System.out.println();
-
+        */
 
         //PART 2 - PROBABILISTIC LEAK DETECTORS
         //Bot 3
+        System.out.println("Bot 3");
+        alpha = 0.5; runTests(3);
+        System.out.println();
 
 
         //Bot 4

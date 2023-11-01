@@ -60,20 +60,7 @@ public class DeterministicBots extends Main {
         }
     }
 
-    /**
-     * Move the bot along the given path and increment numActions for each step
-     * @return the cell the bot ends up in
-     */
-    private static Cell moveBot(Cell bot, LinkedList<Cell> path) {
-        while (!path.isEmpty()) {
-            Cell neighbor = path.removeFirst();
-            bot.isBot = false;
-            neighbor.isBot = true;
-            bot = neighbor;
-            numActions++;
-        }
-        return bot;
-    }
+
 
     /**
      * Deterministic Sense Action (update cells accordingly)
@@ -185,7 +172,7 @@ public class DeterministicBots extends Main {
 
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
-            Bfs.computeDistances(bot);
+            Bfs.updateDistances(bot);
 
             if (bot.isLeak) return;
             else bot.noLeak = true;
