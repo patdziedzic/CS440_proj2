@@ -48,6 +48,7 @@ public class Main {
             switch (bot) {
                 case 1 -> DeterministicBots.runBot1();
                 case 2 -> DeterministicBots.runBot2();
+                case 5 -> MultipleLeaksBots.runBot5();
                 default -> numActions = 0;
             }
 
@@ -143,7 +144,13 @@ public class Main {
 
         //PART 3 - MULTIPLE LEAKS
         //Bot 5
-
+        System.out.println("Bot 5");
+        k = 1; runTests(5);
+        k = 5; runTests(5);
+        k = 10; runTests(5);
+        k = 15; runTests(5);
+        k = 24; runTests(5);
+        System.out.println();
 
         //Bot 6
 
