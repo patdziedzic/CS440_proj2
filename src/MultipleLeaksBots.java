@@ -5,6 +5,9 @@ import java.util.LinkedList;
  */
 public class MultipleLeaksBots extends Main {
 
+    /*
+     * Run an experiment on bot 5
+     */
     public static void runBot5() {
         //initialize the bot
         int randIndex = Main.rand(0, openCells.size()-1);
@@ -61,11 +64,16 @@ public class MultipleLeaksBots extends Main {
             }
             shortestPath.removeFirst();
 
-            //System.out.println(numActions);
+            System.out.println(numActions);
 
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
-            if (bot.isLeak && !(leak1.isLeak == false ^ leak2.isLeak == false)) return;
+            if (bot.isLeak && leak1.isLeak && leak2.isLeak) {
+                if(bot.equals(leak1)) leak1.isLeak = false;
+                if(bot.equals(leak2)) leak2.isLeak = false;
+                bot.isLeak = false;
+            }
+            else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
             else bot.noLeak = true;
 
             //Sense Action
@@ -143,5 +151,69 @@ public class MultipleLeaksBots extends Main {
             if (cell.isLeak) return true;
         }
         return false;
+    }
+
+
+
+    /**
+     * Run an experiment for Bot 6
+     * Must make changes to the leaks (framework in bot 5)
+     */
+    public static void runBot6() {
+        //initialize the bot
+        int randIndex = Main.rand(0, openCells.size()-1);
+        Cell bot = openCells.get(randIndex);
+        bot.isBot = true;
+        LinkedList<Cell> detSquare = getDetectionSquare(bot);
+
+        //initialize the leak
+        Cell leak = null;
+        //the leak must initially be placed in a random open cell outside of the detection square
+        while (leak == null) {
+            randIndex = Main.rand(0, openCells.size() - 1);
+            Cell tempLeak = openCells.get(randIndex);
+
+            boolean found = false;
+            for (Cell cell : detSquare) {
+                if (cell.equals(tempLeak)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) leak = tempLeak;
+        }
+        leak.isLeak = true;
+
+        bot.noLeak = true;
+        for (Cell cell : detSquare) cell.noLeak = true;
+
+        //Ship.printShip(ship);
+
+        while (!bot.isLeak) {
+            LinkedList<Cell> shortestPath = null;
+            //BFS Shortest Path from bot -> nearest potential leak >= 2k cells away
+            shortestPath = Bfs.detSP_BFS_Bot2(bot);
+            if (shortestPath == null) {
+                //BFS Shortest Path from bot -> nearest potential leak
+                shortestPath = Bfs.detSP_BFS(bot);
+                if (shortestPath == null) {
+                    numActions = null;
+                    return;
+                }
+            }
+            shortestPath.removeFirst();
+
+            //System.out.println(numActions);
+
+            //move the bot to the nearest potential leak
+            bot = moveBot(bot, shortestPath);
+            Bfs.updateDistances(bot);
+
+            if (bot.isLeak) return;
+            else bot.noLeak = true;
+
+            //Sense Action
+            detSenseAction(bot);
+        }
     }
 }
