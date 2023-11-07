@@ -32,7 +32,8 @@ public class MultipleLeaksBots extends Main {
             if (!found) leak1 = tempLeak;
         }
         leak1.isLeak = true;
-         
+        
+        //initialization of leak2
         Cell leak2 = null;
         //the leak must initially be placed in a random open cell outside of the detection square
         while (leak2 == null) {
@@ -55,7 +56,7 @@ public class MultipleLeaksBots extends Main {
 
         //Ship.printShip(ship);
 
-        while (!bot.isLeak && (leak1.isLeak == true ^ leak2.isLeak == true)) {
+        while (!bot.isLeak && (leak1.isLeak == true || leak2.isLeak == true)) {
             //BFS Shortest Path from bot -> nearest potential leak
             LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
             if (shortestPath == null) {
@@ -64,7 +65,7 @@ public class MultipleLeaksBots extends Main {
             }
             shortestPath.removeFirst();
 
-            System.out.println(numActions);
+            //System.out.println(numActions);
 
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
@@ -79,21 +80,6 @@ public class MultipleLeaksBots extends Main {
             //Sense Action
             detSenseAction(bot);
         }
-    }
-
-    /**
-     * Move the bot along the given path and increment numActions for each step
-     * @return the cell the bot ends up in
-     */
-    private static Cell moveBot(Cell bot, LinkedList<Cell> path) {
-        while (!path.isEmpty()) {
-            Cell neighbor = path.removeFirst();
-            bot.isBot = false;
-            neighbor.isBot = true;
-            bot = neighbor;
-            numActions++;
-        }
-        return bot;
     }
 
     /**
@@ -166,10 +152,10 @@ public class MultipleLeaksBots extends Main {
         bot.isBot = true;
         LinkedList<Cell> detSquare = getDetectionSquare(bot);
 
-        //initialize the leak
-        Cell leak = null;
+        //initialize the leak1
+        Cell leak1 = null;
         //the leak must initially be placed in a random open cell outside of the detection square
-        while (leak == null) {
+        while (leak1 == null) {
             randIndex = Main.rand(0, openCells.size() - 1);
             Cell tempLeak = openCells.get(randIndex);
 
@@ -180,26 +166,39 @@ public class MultipleLeaksBots extends Main {
                     break;
                 }
             }
-            if (!found) leak = tempLeak;
+            if (!found) leak1 = tempLeak;
         }
-        leak.isLeak = true;
+        leak1.isLeak = true;
+        
+        //initialization of leak2
+        Cell leak2 = null;
+        //the leak must initially be placed in a random open cell outside of the detection square
+        while (leak2 == null) {
+            randIndex = Main.rand(0, openCells.size() - 1);
+            Cell tempLeak = openCells.get(randIndex);
+
+            boolean found = false;
+            for (Cell cell : detSquare) {
+                if (cell.equals(tempLeak)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) leak2 = tempLeak;
+        }
+        leak2.isLeak = true;
 
         bot.noLeak = true;
         for (Cell cell : detSquare) cell.noLeak = true;
 
         //Ship.printShip(ship);
 
-        while (!bot.isLeak) {
-            LinkedList<Cell> shortestPath = null;
-            //BFS Shortest Path from bot -> nearest potential leak >= 2k cells away
-            shortestPath = Bfs.detSP_BFS_Bot2(bot);
+        while (!bot.isLeak && (leak1.isLeak == true || leak2.isLeak == true)) {
+            //BFS Shortest Path from bot -> nearest potential leak
+            LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
             if (shortestPath == null) {
-                //BFS Shortest Path from bot -> nearest potential leak
-                shortestPath = Bfs.detSP_BFS(bot);
-                if (shortestPath == null) {
-                    numActions = null;
-                    return;
-                }
+                numActions = null;
+                return;
             }
             shortestPath.removeFirst();
 
@@ -207,9 +206,12 @@ public class MultipleLeaksBots extends Main {
 
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
-            Bfs.updateDistances(bot);
-
-            if (bot.isLeak) return;
+            if (bot.isLeak && leak1.isLeak && leak2.isLeak) {
+                if(bot.equals(leak1)) leak1.isLeak = false;
+                if(bot.equals(leak2)) leak2.isLeak = false;
+                bot.isLeak = false;
+            }
+            else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
             else bot.noLeak = true;
 
             //Sense Action
