@@ -169,15 +169,10 @@ public class Bfs {
     }
 
 
-
-
-
-
-
     /**
-     * Dijkstra's Algorithm to compute the distances
+     * Dijkstra's Algorithm to compute and update the distances
      */
-    public static void computeDistances(Cell bot){
+    public static void updateDistances(Cell bot){
         visited = new boolean[Ship.D][Ship.D];
         PriorityQueue<PQCell> pq = new PriorityQueue<>();
 
