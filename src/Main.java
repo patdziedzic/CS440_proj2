@@ -68,6 +68,7 @@ public class Main {
                 case 5 -> MultipleLeaksBots.runBot5();
                 case 6 -> MultipleLeaksBots.runBot6();
                 case 7 -> MultipleLeaksBots.runBot7();
+                case 8 -> MultipleLeaksBots.runBot8();
                 default -> numActions = 0;
             }
 
@@ -153,7 +154,7 @@ public class Main {
         k = 20; runTests(2);
         k = 24; runTests(2);
         System.out.println();
-*/
+
 
         //PART 2 - PROBABILISTIC LEAK DETECTORS
         //Bot 3
@@ -163,15 +164,15 @@ public class Main {
         alpha = 0.75; runTests(3);
         System.out.println();
 
-/*
+
         //Bot 4
         System.out.println("Bot 4");
         alpha = 0.25; runTests(4);
         alpha = 0.5; runTests(4);
         alpha = 0.75; runTests(4);
         System.out.println();
-*/
-/*
+
+
         //PART 3 - MULTIPLE LEAKS
         //Bot 5
         System.out.println("Bot 5");
@@ -200,7 +201,11 @@ public class Main {
         System.out.println();
 
         //Bot 8
-
+        System.out.println("Bot 8");
+        alpha = 0.25; runTests(8);
+        alpha = 0.5; runTests(8);
+        alpha = 0.75; runTests(8);
+        System.out.println();
 
         //Bot 9
     }
