@@ -193,7 +193,7 @@ public class MultipleLeaksBots extends Main {
 
         //Ship.printShip(ship);
 
-        while (!bot.isLeak && (leak1.isLeak == true || leak2.isLeak == true)) {
+        while (!bot.isLeak && (leak1.isLeak || leak2.isLeak)) {
             //BFS Shortest Path from bot -> nearest potential leak
             LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
             if (shortestPath == null) {
@@ -204,8 +204,13 @@ public class MultipleLeaksBots extends Main {
 
             //System.out.println(numActions);
 
-            //move the bot to the nearest potential leak
-            bot = moveBot(bot, shortestPath);
+            //move the bot one step to the nearest potential leak
+            Cell neighbor = shortestPath.removeFirst();
+            bot.isBot = false;
+            neighbor.isBot = true;
+            bot = neighbor;
+            numActions++;
+
             if (bot.isLeak && leak1.isLeak && leak2.isLeak) {
                 if(bot.equals(leak1)) leak1.isLeak = false;
                 if(bot.equals(leak2)) leak2.isLeak = false;

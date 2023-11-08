@@ -124,6 +124,7 @@ public class DeterministicBots extends Main {
     /**
      * Run an experiment for Bot 2
      */
+    /*
     public static void runBot2() {
         //initialize the bot
         int randIndex = Main.rand(0, openCells.size()-1);
@@ -174,6 +175,61 @@ public class DeterministicBots extends Main {
             bot = moveBot(bot, shortestPath);
             Bfs.updateDistances(bot);
 
+            if (bot.isLeak) return;
+            else bot.noLeak = true;
+
+            //Sense Action
+            detSenseAction(bot);
+        }
+    }
+     */
+    public static void runBot2() {
+        //initialize the bot
+        int randIndex = Main.rand(0, openCells.size()-1);
+        Cell bot = openCells.get(randIndex);
+        bot.isBot = true;
+        LinkedList<Cell> detSquare = getDetectionSquare(bot);
+
+        //initialize the leak
+        Cell leak = null;
+        //the leak must initially be placed in a random open cell outside of the detection square
+        while (leak == null) {
+            randIndex = Main.rand(0, openCells.size() - 1);
+            Cell tempLeak = openCells.get(randIndex);
+
+            boolean found = false;
+            for (Cell cell : detSquare) {
+                if (cell.equals(tempLeak)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) leak = tempLeak;
+        }
+        leak.isLeak = true;
+
+        bot.noLeak = true;
+        for (Cell cell : detSquare) cell.noLeak = true;
+
+        //Ship.printShip(ship);
+
+        while (!bot.isLeak) {
+            //BFS Shortest Path from bot -> nearest potential leak
+            LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
+            if (shortestPath == null) {
+                numActions = null;
+                return;
+            }
+            shortestPath.removeFirst();
+
+            //System.out.println(numActions);
+
+            //move the bot one step to the nearest potential leak
+            Cell neighbor = shortestPath.removeFirst();
+            bot.isBot = false;
+            neighbor.isBot = true;
+            bot = neighbor;
+            numActions++;
             if (bot.isLeak) return;
             else bot.noLeak = true;
 

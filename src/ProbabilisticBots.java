@@ -36,7 +36,8 @@ public class ProbabilisticBots extends Main {
         for (Cell cell : openCells) {
             cell.setProbLeak(maxProb);
         }
-        Cell maxProbCell = bot.neighbors.peek(); //randomly get a neighbor to go to
+        bot.setProbLeak(0);
+        Cell maxProbCell;
 
         //Ship.printShip(ship);
 
@@ -75,6 +76,89 @@ public class ProbabilisticBots extends Main {
 
             //Sense Action
             probSenseAction(bot, leak);
+        }
+    }
+
+    /**
+     * Run an experiment for Bot 4
+     * Update numActions taken (moves + sensing) to plug the leak
+     */
+    public static void runBot4() {
+        //initialize the bot
+        int randIndex = Main.rand(0, openCells.size()-1);
+        Cell bot = openCells.get(randIndex);
+        bot.isBot = true;
+
+        //initialize the leak
+        randIndex = Main.rand(0, openCells.size()-1);
+        Cell leak = openCells.get(randIndex);
+        leak.isLeak = true;
+
+        //if the leak spawns on the bot, ignore test case
+        if (bot.isLeak) {
+            numActions = null;
+            return;
+        }
+        bot.noLeak = true;
+
+        //set initial probabilities and get the cell with the max
+        int size = openCells.size();
+        double maxProb = 1/(double)size;
+        for (Cell cell : openCells) {
+            cell.setProbLeak(maxProb);
+        }
+        Cell maxProbCell = bot.neighbors.peek(); //randomly get a neighbor to go to
+
+        //Ship.printShip(ship);
+
+        while (!bot.isLeak) {
+            //BFS Shortest Path from bot -> cell with highest P(L)
+            maxProb = 0.0;
+            maxProbCell = null;
+            for (Cell cell : openCells) {
+                if (maxProb < cell.getProbLeak()) {
+                    maxProb = cell.getProbLeak();
+                    maxProbCell = cell;
+                }
+            }
+            LinkedList<Cell> shortestPath = Bfs.SP_BFS(bot, maxProbCell);
+            if (shortestPath == null) {
+                numActions = null;
+                return;
+            }
+            shortestPath.removeFirst();
+
+            //System.out.println(numActions);
+
+            //move the bot one step toward cell with highest P(L)
+            Cell neighbor = shortestPath.removeFirst();
+            bot.isBot = false;
+            neighbor.isBot = true;
+            bot = neighbor;
+            numActions++;
+            Bfs.updateDistances(bot);
+
+            if (bot.isLeak) return;
+
+            bot.noLeak = true;
+            bot.setProbLeak(0);
+            updateProb_Step(bot);
+
+            //Sense Action (looping now for bot 4)
+            int numNonLeak = 0;
+            for (Cell cell: openCells)
+                if (cell.noLeak) numNonLeak++;
+
+            double percentChecked = numNonLeak/(double)openCells.size(); //high = majority has been checked
+            //0.25 < p < 0.75 --> looping when 25 to 75 percent is checked
+
+            if (percentChecked > 0.2 && percentChecked < 0.5) {
+                for (int i = 0; i < 3; i++)
+                    probSenseAction(bot, leak);
+            }
+            else {
+                probSenseAction(bot, leak);
+            }
         }
     }
 
