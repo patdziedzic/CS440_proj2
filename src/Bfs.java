@@ -115,7 +115,7 @@ public class Bfs {
 
 
     /**
-     * Dijkstra's Algorithm to compute and update the distances
+     * Dijkstra's Algorithm to compute and update the distances (distFromBot) for each cell
      */
     public static void updateDistances(Cell bot){
         visited = new boolean[Ship.D][Ship.D];

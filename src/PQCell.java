@@ -1,6 +1,6 @@
 public class PQCell implements Comparable<PQCell> {
     public Cell cell;
-    public int dist; //number of wins after running simulations
+    public int dist;
 
     public PQCell(Cell cell, int dist) {
         this.cell = cell;

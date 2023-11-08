@@ -14,12 +14,12 @@ public class ProbabilisticBots extends Main {
      */
     public static void runBot3() {
         //initialize the bot
-        int randIndex = Main.rand(0, openCells.size()-1);
+        int randIndex = rand(0, openCells.size()-1);
         Cell bot = openCells.get(randIndex);
         bot.isBot = true;
 
         //initialize the leak
-        randIndex = Main.rand(0, openCells.size()-1);
+        randIndex = rand(0, openCells.size()-1);
         Cell leak = openCells.get(randIndex);
         leak.isLeak = true;
 
@@ -85,12 +85,12 @@ public class ProbabilisticBots extends Main {
      */
     public static void runBot4() {
         //initialize the bot
-        int randIndex = Main.rand(0, openCells.size()-1);
+        int randIndex = rand(0, openCells.size()-1);
         Cell bot = openCells.get(randIndex);
         bot.isBot = true;
 
         //initialize the leak
-        randIndex = Main.rand(0, openCells.size()-1);
+        randIndex = rand(0, openCells.size()-1);
         Cell leak = openCells.get(randIndex);
         leak.isLeak = true;
 
