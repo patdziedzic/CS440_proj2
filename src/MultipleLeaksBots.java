@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
 /**
  * Class for Multiple Leaks Bots (5-9)
@@ -56,7 +57,7 @@ public class MultipleLeaksBots extends Main {
 
         //Ship.printShip(ship);
 
-        while (!bot.isLeak && (leak1.isLeak == true || leak2.isLeak == true)) {
+        while (!bot.isLeak && (leak1.isLeak || leak2.isLeak)) {
             //BFS Shortest Path from bot -> nearest potential leak
             LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
             if (shortestPath == null) {
@@ -69,11 +70,12 @@ public class MultipleLeaksBots extends Main {
 
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
+            //if bot reached one of the leaks and both have not been plugged
             if (bot.isLeak && leak1.isLeak && leak2.isLeak) {
-                if(bot.equals(leak1)) leak1.isLeak = false;
-                if(bot.equals(leak2)) leak2.isLeak = false;
                 bot.isLeak = false;
+                bot.noLeak = true;
             }
+            //else if bot reached one of the leaks and the other has been plugged
             else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
             else bot.noLeak = true;
 
@@ -211,11 +213,12 @@ public class MultipleLeaksBots extends Main {
             bot = neighbor;
             numActions++;
 
+            //if bot reached one of the leaks and both have not been plugged
             if (bot.isLeak && leak1.isLeak && leak2.isLeak) {
-                if(bot.equals(leak1)) leak1.isLeak = false;
-                if(bot.equals(leak2)) leak2.isLeak = false;
                 bot.isLeak = false;
+                bot.noLeak = true;
             }
+            //else if bot reached one of the leaks and the other has been plugged
             else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
             else bot.noLeak = true;
 
