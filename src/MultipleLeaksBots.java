@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -373,12 +374,12 @@ public class MultipleLeaksBots extends DeterministicBots {
         double maxProbLeakPair = Math.pow(1/(double)size, 2);
         //^ initially, P(L in j, L in k) = P(L in j)*P(L in k) = 1/numOpenCells squared.
 
-        LinkedList<Pairing> pairings = new LinkedList<>();
+        HashMap<Pairing, Double> pairings = new HashMap<>();
         for (int i = 0; i < openCells.size(); i++) {
             Cell c1 = openCells.get(i);
             for (int j = i + 1; j < openCells.size(); j++) {
                 Cell c2 = openCells.get(j);
-                pairings.add(new Pairing(c1, c2, maxProbLeakPair));
+                pairings.put(new Pairing(c1, c2), maxProbLeakPair);
             }
         }
 
@@ -387,7 +388,7 @@ public class MultipleLeaksBots extends DeterministicBots {
         Cell maxProbCell;
 
         //Ship.printShip(ship);
-
+        /*
         while (!bot.isLeak && (leak1.isLeak || leak2.isLeak)) {
             //BFS Shortest Path from bot -> cell with highest P(L)
             maxProb = 0.0;
@@ -431,6 +432,7 @@ public class MultipleLeaksBots extends DeterministicBots {
             else
                 probSenseAction_Bot8(bot, leak2);
         }
+         */
     }
 
     /**

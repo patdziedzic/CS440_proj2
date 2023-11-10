@@ -1,18 +1,18 @@
 public class Pairing {
     public Cell c1;
     public Cell c2;
-    public double probLeakPair;
+    /*public double probLeakPair;
 
     public Pairing(Cell c1, Cell c2, double probLeakPair) {
         this.c1 = c1;
         this.c2 = c2;
         this.probLeakPair = probLeakPair;
-    }
+    }*/
 
     public Pairing(Cell c1, Cell c2) {
         this.c1 = c1;
         this.c2 = c2;
-        probLeakPair = 0.0;
+        //probLeakPair = 0.0;
     }
 
     /**
