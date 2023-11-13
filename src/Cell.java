@@ -25,6 +25,7 @@ public class Cell {
 
     //PROBABILITIES
     private double probLeak; //P(Leak) which is updated to P(L|B) or P(L|~B) each sense action
+    //^ for multiple leaks, this is the summation of all the pairings
     private double beepProb; //P(Beep in cell i | Leak in cell j)
 
 
@@ -116,7 +117,9 @@ public class Cell {
     public void setBeepProb(Cell leak) {
         this.beepProb = 1 / Math.exp(Main.alpha * (leak.distFromBot - 1));
     }
-
+    public void setBeepProb(double beepProb) {
+        this.beepProb = beepProb;
+    }
 
     /**
      * Two Cells are equal if they have the same row and col

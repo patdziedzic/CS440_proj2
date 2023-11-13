@@ -36,7 +36,7 @@ public class ProbabilisticBots extends Main {
         bot.noLeak = true;
 
         //set initial probabilities and get the cell with the max
-        int size = openCells.size();
+        int size = openCells.size() - 1; //(-1) to account for the bot initially not being the leak
         double maxProb = 1/(double)size;
         for (Cell cell : openCells) {
             cell.setProbLeak(maxProb);
@@ -63,8 +63,6 @@ public class ProbabilisticBots extends Main {
             }
             shortestPath.removeFirst();
 
-            //System.out.println(numActions);
-
             //move the bot one step toward cell with highest P(L)
             Cell neighbor = shortestPath.removeFirst();
             bot.isBot = false;
@@ -77,7 +75,6 @@ public class ProbabilisticBots extends Main {
 
             bot.noLeak = true;
             updateProb_Step(bot);
-            bot.setProbLeak(0);
 
             //Sense Action
             if (bot.equals(maxProbCell))
@@ -108,7 +105,7 @@ public class ProbabilisticBots extends Main {
         bot.noLeak = true;
 
         //set initial probabilities and get the cell with the max
-        int size = openCells.size();
+        int size = openCells.size() - 1; //(-1) to account for the bot initially not being the leak
         double maxProb = 1/(double)size;
         for (Cell cell : openCells) {
             cell.setProbLeak(maxProb);
@@ -179,7 +176,6 @@ public class ProbabilisticBots extends Main {
 
             bot.noLeak = true;
             updateProb_Step(bot);
-            bot.setProbLeak(0);
 
             //Sense Action
             if (bot.equals(next))
@@ -214,7 +210,7 @@ public class ProbabilisticBots extends Main {
 
 
     /**
-     * Update P(L) for each cell after taking a step
+     * Update P(L) for each cell after taking a step and set P(L) = 0 for bot
      */
     private static void updateProb_Step(Cell bot) {
         //update P(L) for each cell j to be P(leak in cell j | leak is not in bot)
@@ -234,6 +230,8 @@ public class ProbabilisticBots extends Main {
         for (Cell cell : openCells) {
             cell.setProbLeak(newValues[cell.getRow()][cell.getCol()]);
         }
+
+        bot.setProbLeak(0);
     }
 
     /**

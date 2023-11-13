@@ -97,6 +97,34 @@ public class Main {
 
     }
 
+    private static void proveHashMap() {
+        ship = Ship.makeShip();
+        openCells = new ArrayList<>();
+        for (int i = 0; i < Ship.D; i++){
+            for (int j = 0; j < Ship.D; j++){
+                if (ship[i][j].isOpen)
+                    openCells.add(ship[i][j]);
+            }
+        }
+
+
+        HashMap<Pairing, Double> pairings = new HashMap<>();
+        for (Cell c1 : openCells) {
+            for (Cell c2 : openCells) {
+                if (!c1.equals(c2))
+                    pairings.put(new Pairing(c1, c2), 15.0);
+            }
+        }
+
+        System.out.println(pairings.size());
+        for (Pairing pair : pairings.keySet()) {
+            if (pair.c1.getRow() == 1 && pair.c1.getCol() == 1)
+                System.out.println(pair.c1 + ", " + pair.c2 + " ... VALUE: " + pairings.get(pair));
+        }
+        System.out.println();
+        System.out.println("(1,1) and (0,1): " + pairings.get(new Pairing(ship[1][1], ship[0][1])));
+    }
+
     /**
      * Main driver method to run the tests for each bot
      */
@@ -132,6 +160,11 @@ public class Main {
 
 
 
+        //proveHashMap();
+
+
+
+
 
 /*
         //PART 1 - DETERMINISTIC LEAK DETECTORS
@@ -155,7 +188,7 @@ public class Main {
         k = 24; runTests(2);
         System.out.println();
 */
-
+/*
         //PART 2 - PROBABILISTIC LEAK DETECTORS
         //Bot 3
         System.out.println("Bot 3");
@@ -180,7 +213,7 @@ public class Main {
         alpha = 0.8; runTests(4);
         alpha = 1; runTests(4);
         System.out.println();
-
+*/
 /*
         //PART 3 - MULTIPLE LEAKS
         //Bot 5
