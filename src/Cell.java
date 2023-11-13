@@ -118,8 +118,6 @@ public class Cell {
     }
 
 
-
-
     /**
      * Two Cells are equal if they have the same row and col
      * @param obj Cell object
@@ -132,5 +130,15 @@ public class Cell {
             return c.row == this.row && c.col == this.col;
         }
         return false;
+    }
+
+    /**
+     * Cell to String
+     * @return (row, col)
+     */
+    @Override
+    public String toString()
+    {
+        return "(" + row + ", " + col + ")";
     }
 }

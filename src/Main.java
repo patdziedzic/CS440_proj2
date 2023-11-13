@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class Main {
-    private static final int numTests = 500;
+    private static final int numTests = 50;
     public static int k; //size of detection square - (2k+1) x (2k+1), k >= 1
     //^ for a 50x50 ship, 1 <= k <= 24 because max square can be 49x49
     public static double alpha; //accuracy of probabilistic sensor (smaller = more accurate), 0 < alpha < 1
@@ -69,8 +69,6 @@ public class Main {
                 case 6 -> MultipleLeaksBots.runBot6();
                 case 7 -> MultipleLeaksBots.runBot7();
                 case 8 -> MultipleLeaksBots.runBot8();
-
-                case 45 -> ProbabilisticBots.runBot45();
                 default -> numActions = 0;
             }
 
@@ -157,28 +155,30 @@ public class Main {
         k = 24; runTests(2);
         System.out.println();
 */
-/*
+
         //PART 2 - PROBABILISTIC LEAK DETECTORS
         //Bot 3
         System.out.println("Bot 3");
+        alpha = 0.2; runTests(3);
         alpha = 0.25; runTests(3);
-        alpha = 0.5; runTests(3);
-        alpha = 0.75; runTests(3);
+        alpha = 0.3; runTests(3);
+        alpha = 0.35; runTests(3);
+        alpha = 0.4; runTests(3);
+        alpha = 0.6; runTests(3);
+        alpha = 0.8; runTests(3);
+        alpha = 1; runTests(3);
         System.out.println();
-*/
 
         //Bot 4
         System.out.println("Bot 4");
+        alpha = 0.2; runTests(4);
         alpha = 0.25; runTests(4);
-        alpha = 0.5; runTests(4);
-        alpha = 0.75; runTests(4);
-        System.out.println();
-
-        //Bot 45
-        System.out.println("Bot 45");
-        alpha = 0.25; runTests(45);
-        alpha = 0.5; runTests(45);
-        alpha = 0.75; runTests(45);
+        alpha = 0.3; runTests(4);
+        alpha = 0.35; runTests(4);
+        alpha = 0.4; runTests(4);
+        alpha = 0.6; runTests(4);
+        alpha = 0.8; runTests(4);
+        alpha = 1; runTests(4);
         System.out.println();
 
 /*

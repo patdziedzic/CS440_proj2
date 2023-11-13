@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
@@ -6,6 +7,9 @@ import java.util.PriorityQueue;
  * Class for Probabilistic Bots (3 and 4)
  */
 public class ProbabilisticBots extends Main {
+    private static final int numSimBeeps = 10000;
+
+
     //private static PriorityQueue<Cell> pqProb = new PriorityQueue<>(new PQComparator());
     //^ priority queue of cells to compare P(L) for each
 
@@ -72,16 +76,12 @@ public class ProbabilisticBots extends Main {
             if (bot.isLeak) return;
 
             bot.noLeak = true;
-            bot.setProbLeak(0);
             updateProb_Step(bot);
+            bot.setProbLeak(0);
 
             //Sense Action
-            probSenseAction(bot, leak);
-            /*
-            System.out.println("curr: (" + bot.getRow() + ", " + bot.getCol() + ") "
-                    + "maxProbCell: (" + maxProbCell.getRow() + ", " + maxProbCell.getCol() + ") " +
-                    "with P(L) = " + maxProb);
-             */
+            if (bot.equals(maxProbCell))
+                probSenseAction(bot, leak);
         }
     }
 
@@ -119,7 +119,8 @@ public class ProbabilisticBots extends Main {
         //Ship.printShip(ship);
 
         while (!bot.isLeak) {
-            //BFS Shortest Path from bot -> cell with highest P(L)
+            PriorityQueue<SimResult> simResults = new PriorityQueue<>();
+
             maxProb = 0.0;
             maxProbCell = null;
             for (Cell cell : openCells) {
@@ -128,7 +129,36 @@ public class ProbabilisticBots extends Main {
                     maxProbCell = cell;
                 }
             }
-            LinkedList<Cell> shortestPath = Bfs.SP_BFS(bot, maxProbCell);
+
+            maxProb = 0.0;
+            Cell maxProbCell_2 = null;
+            for (Cell cell : openCells) {
+                if (maxProb < cell.getProbLeak() && !cell.equals(maxProbCell)) {
+                    maxProb = cell.getProbLeak();
+                    maxProbCell_2 = cell;
+                }
+            }
+
+            maxProb = 0.0;
+            Cell maxProbCell_3 = null;
+            for (Cell cell : openCells) {
+                if (maxProb < cell.getProbLeak() && !cell.equals(maxProbCell) && !cell.equals(maxProbCell_2)) {
+                    maxProb = cell.getProbLeak();
+                    maxProbCell_3 = cell;
+                }
+            }
+
+            if (maxProbCell != null)
+                simResults.add(new SimResult(maxProbCell, runSimulations_Bot45(maxProbCell, leak)));
+            if (maxProbCell_2 != null)
+                simResults.add(new SimResult(maxProbCell_2, runSimulations_Bot45(maxProbCell_2, leak)));
+            if (maxProbCell_3 != null)
+                simResults.add(new SimResult(maxProbCell_3, runSimulations_Bot45(maxProbCell_3, leak)));
+
+            Cell next = simResults.peek().cell;
+
+            //BFS Shortest Path from bot -> cell with highest P(L)
+            LinkedList<Cell> shortestPath = Bfs.SP_BFS(bot, next);
             if (shortestPath == null) {
                 numActions = null;
                 return;
@@ -137,7 +167,7 @@ public class ProbabilisticBots extends Main {
 
             //System.out.println(numActions);
 
-            //move the bot one step toward cell with highest P(L)
+            //move the bot to next
             Cell neighbor = shortestPath.removeFirst();
             bot.isBot = false;
             neighbor.isBot = true;
@@ -148,87 +178,40 @@ public class ProbabilisticBots extends Main {
             if (bot.isLeak) return;
 
             bot.noLeak = true;
-            bot.setProbLeak(0);
             updateProb_Step(bot);
+            bot.setProbLeak(0);
 
             //Sense Action
-            if (bot.equals(maxProbCell))
+            if (bot.equals(next))
                 probSenseAction(bot, leak);
         }
     }
 
     /**
-     * Run an experiment for Bot 45 (4.5)
-     * Update numActions taken (moves + sensing) to plug the leak
+     * Run simulations for Bot 45 --> pretend to go to the given maxProbCell and beep a given number of times
+     * @return number of beeps out of numSimBeeps
      */
-    public static void runBot45() {
-        //initialize the bot
-        int randIndex = rand(0, openCells.size()-1);
-        Cell bot = openCells.get(randIndex);
-        bot.isBot = true;
+    private static int runSimulations_Bot45(Cell maxProbCell, Cell leak) {
+        if (maxProbCell.isLeak) return numSimBeeps;
 
-        //initialize the leak
-        randIndex = rand(0, openCells.size()-1);
-        Cell leak = openCells.get(randIndex);
-        leak.isLeak = true;
+        //copy ship
+        Cell[][] copyShip = Ship.copyShip(Main.ship);
+        Cell copyMaxProbCell = copyShip[maxProbCell.getRow()][maxProbCell.getCol()];
+        Cell copyLeak = copyShip[leak.getRow()][leak.getCol()];
 
-        //if the leak spawns on the bot, ignore test case
-        if (bot.isLeak) {
-            numActions = null;
-            return;
-        }
-        bot.noLeak = true;
+        Bfs.updateDistances(copyMaxProbCell);
+        copyMaxProbCell.setBeepProb(copyLeak);
 
-        //set initial probabilities and get the cell with the max
-        int size = openCells.size();
-        double maxProb = 1/(double)size;
-        for (Cell cell : openCells) {
-            cell.setProbLeak(maxProb);
-        }
-        bot.setProbLeak(0);
-        Cell maxProbCell;
+        int numBeeps = 0;
+        for (int i = 0; i < numSimBeeps; i++)
+            if (Math.random() <= copyMaxProbCell.getBeepProb())
+                numBeeps++;
 
-        //Ship.printShip(ship);
-
-        while (!bot.isLeak) {
-            //BFS Shortest Path from bot -> cell with highest P(L)
-            maxProb = 0.0;
-            maxProbCell = null;
-            for (Cell cell : openCells) {
-                if (maxProb < cell.getProbLeak()) {
-                    maxProb = cell.getProbLeak();
-                    maxProbCell = cell;
-                }
-            }
-            LinkedList<Cell> shortestPath = Bfs.SP_BFS(bot, maxProbCell);
-            if (shortestPath == null) {
-                numActions = null;
-                return;
-            }
-            shortestPath.removeFirst();
-
-            //System.out.println(numActions);
-
-            //move the bot one step toward cell with highest P(L)
-            Cell neighbor = shortestPath.removeFirst();
-            bot.isBot = false;
-            neighbor.isBot = true;
-            bot = neighbor;
-            numActions++;
-            Bfs.updateDistances(bot);
-
-            if (bot.isLeak) return;
-
-            bot.noLeak = true;
-            bot.setProbLeak(0);
-            updateProb_Step(bot);
-
-            //Sense Action
-            //if (bot.equals(maxProbCell))
-            //    for (int i = 0; i < 5; i++)
-            //        probSenseAction(bot, leak);
-        }
+        return numBeeps;
     }
+
+
+
 
     /**
      * Update P(L) for each cell after taking a step
