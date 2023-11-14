@@ -413,7 +413,7 @@ public class MultipleLeaksBots extends DeterministicBots {
             for (int j = 0; j < i; j++) {
                 Cell c2 = openCells.get(j);
                 if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
-                    sumProbLeak += pairings.get(c1).get(c2);
+                    sumProbLeak += pairings.get(c2).get(c1);
                 }
             }
             //for all cells after i, set the initial probability for the pair
@@ -616,7 +616,7 @@ public class MultipleLeaksBots extends DeterministicBots {
                     Cell c2 = openCells.get(j);
                     if (!c2.equals(bot) && !c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
                         pairsForGivenCell.put(c2, pairings.get(c1).get(c2));
-                        sumProbLeak += pairings.get(c1).get(c2);
+                        sumProbLeak += pairings.get(c2).get(c1);
                     }
                 }
                 //for all cells after i, calculate new probability
@@ -666,7 +666,7 @@ public class MultipleLeaksBots extends DeterministicBots {
                 Cell c2 = openCells.get(j);
                 if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
                     pairsForGivenCell.put(c2, pairings.get(c1).get(c2));
-                    sumProbLeak += pairings.get(c1).get(c2);
+                    sumProbLeak += pairings.get(c2).get(c1);
                 }
             }
             //for all cells after i, calculate new probability

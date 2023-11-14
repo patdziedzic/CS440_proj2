@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class Main {
-    private static final int numTests = 50;
+    private static final int numTests = 200;
     public static int k; //size of detection square - (2k+1) x (2k+1), k >= 1
     //^ for a 50x50 ship, 1 <= k <= 24 because max square can be 49x49
     public static double alpha; //accuracy of probabilistic sensor (smaller = more accurate), 0 < alpha < 1
@@ -78,6 +78,7 @@ public class Main {
                 test--;
             else
                 testResults.add(numActions);
+            //System.out.println("Test " + test + " completed.");
         }
 
         int totalActions = 0;
@@ -211,7 +212,7 @@ public class Main {
         k = 24; runTests(2);
         System.out.println();
 */
-/*
+
         //PART 2 - PROBABILISTIC LEAK DETECTORS
         //Bot 3
         System.out.println("Bot 3");
@@ -236,7 +237,7 @@ public class Main {
         alpha = 0.8; runTests(4);
         alpha = 1; runTests(4);
         System.out.println();
-*/
+
 /*
         //PART 3 - MULTIPLE LEAKS
         //Bot 5
@@ -266,11 +267,11 @@ public class Main {
         System.out.println();
 */
         //Bot 8
-        System.out.println("Bot 8");
-        alpha = 0.25; runTests(8);
-        alpha = 0.5; runTests(8);
-        alpha = 0.75; runTests(8);
-        System.out.println();
+//        System.out.println("Bot 8");
+//        alpha = 0.25; runTests(8);
+//        alpha = 0.5; runTests(8);
+//        alpha = 0.75; runTests(8);
+//        System.out.println();
 
         //Bot 9
     }
