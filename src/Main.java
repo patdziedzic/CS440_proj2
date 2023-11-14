@@ -106,23 +106,46 @@ public class Main {
                     openCells.add(ship[i][j]);
             }
         }
+        double x = 0;
 
-
-        HashMap<Pairing, Double> pairings = new HashMap<>();
-        for (Cell c1 : openCells) {
-            for (Cell c2 : openCells) {
-                if (!c1.equals(c2))
-                    pairings.put(new Pairing(c1, c2), 15.0);
+        HashMap<Cell, HashMap<Cell, Double>> pairings = new HashMap<>();
+        for (int i = 0; i < openCells.size(); i++) {
+            Cell c1 = openCells.get(i);
+            HashMap<Cell, Double> pairsForGivenCell = new HashMap<>();
+            for (int j = i + 1; j < openCells.size(); j++) {
+                Cell c2 = openCells.get(j);
+                if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
+                    pairsForGivenCell.put(c2, x);
+                }
+                x++;
             }
+            pairings.put(c1, pairsForGivenCell);
         }
 
-        System.out.println(pairings.size());
+        System.out.println("Size: " + pairings.size());
+        /*
         for (Pairing pair : pairings.keySet()) {
             if (pair.c1.getRow() == 1 && pair.c1.getCol() == 1)
                 System.out.println(pair.c1 + ", " + pair.c2 + " ... VALUE: " + pairings.get(pair));
         }
+        for (Pairing pair : pairings.keySet()) {
+            System.out.println(pair.c1 + ", " + pair.c2 + " ... HASHCODE: " + pair.hashCode());
+        }*/
+
+        /*for (int i = 0; i < openCells.size(); i++) {
+            Cell c1 = openCells.get(i);
+            for (Cell c2 : pairings.get(c1).keySet())
+                System.out.println(c1 + ", " + c2 + " ... HASHCODE: " + pairings.get(c1).hashCode());
+        }*/
+        for (int i = 0; i < openCells.size(); i++) {
+            Cell c1 = openCells.get(i);
+            for (int j = 0; j < openCells.size(); j++) {
+                Cell c2 = openCells.get(j);
+                System.out.println(c1 + ", " + c2 + " ... PROB: " + pairings.get(c1).get(c2));
+            }
+        }
         System.out.println();
-        System.out.println("(1,1) and (0,1): " + pairings.get(new Pairing(ship[1][1], ship[0][1])));
+        //System.out.println("(1,1) and (0,1): " + pairings.get(new Pairing(ship[1][1], ship[0][1])));
     }
 
     /**
@@ -241,14 +264,14 @@ public class Main {
         alpha = 0.5; runTests(7);
         alpha = 0.75; runTests(7);
         System.out.println();
-*//*
+*/
         //Bot 8
         System.out.println("Bot 8");
         alpha = 0.25; runTests(8);
         alpha = 0.5; runTests(8);
         alpha = 0.75; runTests(8);
         System.out.println();
-*/
+
         //Bot 9
     }
 }

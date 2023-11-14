@@ -33,9 +33,10 @@ public class Pairing {
     /**
      * Implement own hashcode for HashMap.
      */
-    @Override
+    /*@Override
     public int hashCode() {
         return (c1.getRow() * Ship.D + c1.getCol()) * Ship.D +
                 (c2.getRow() * Ship.D + c2.getCol());
-    }
+        return (c1.getRow() * Ship.D + c1.getCol()) * Ship.D + (c2.getRow() * Ship.D + c2.getCol());
+    }*/
 }
