@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class Main {
-    private static final int numTests = 200;
+    private static final int numTests = 50;
     public static int k; //size of detection square - (2k+1) x (2k+1), k >= 1
     //^ for a 50x50 ship, 1 <= k <= 24 because max square can be 49x49
     public static double alpha; //accuracy of probabilistic sensor (smaller = more accurate), 0 < alpha < 1
@@ -261,18 +261,38 @@ public class Main {
 /*
         //Bot 7
         System.out.println("Bot 7");
+        alpha = 0.2; runTests(7);
         alpha = 0.25; runTests(7);
-        alpha = 0.5; runTests(7);
-        alpha = 0.75; runTests(7);
+        alpha = 0.3; runTests(7);
+        alpha = 0.35; runTests(7);
+        alpha = 0.4; runTests(7);
+        alpha = 0.6; runTests(7);
+        alpha = 0.8; runTests(7);
+        alpha = 1; runTests(7);
         System.out.println();
 */
         //Bot 8
-//        System.out.println("Bot 8");
-//        alpha = 0.25; runTests(8);
-//        alpha = 0.5; runTests(8);
-//        alpha = 0.75; runTests(8);
-//        System.out.println();
+        System.out.println("Bot 8");
+        alpha = 0.2; runTests(8);
+        alpha = 0.25; runTests(8);
+        alpha = 0.3; runTests(8);
+        alpha = 0.35; runTests(8);
+        alpha = 0.4; runTests(8);
+        alpha = 0.6; runTests(8);
+        alpha = 0.8; runTests(8);
+        alpha = 1; runTests(8);
+        System.out.println();
 
         //Bot 9
+        System.out.println("Bot 9");
+        alpha = 0.2; runTests(9);
+        alpha = 0.25; runTests(9);
+        alpha = 0.3; runTests(9);
+        alpha = 0.35; runTests(9);
+        alpha = 0.4; runTests(9);
+        alpha = 0.6; runTests(9);
+        alpha = 0.8; runTests(9);
+        alpha = 1; runTests(9);
+        System.out.println();
     }
 }

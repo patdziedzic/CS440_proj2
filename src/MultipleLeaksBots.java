@@ -717,4 +717,170 @@ public class MultipleLeaksBots extends DeterministicBots {
             updateProb_Sense_Bot8_MultipleLeaks(1 - bot.getBeepProb());
         }
     }
+
+
+
+    /**
+     * Run an experiment for Bot 9
+     * Modeled after Bot 8 and Bot 4
+     */
+    public static void runBot9() {
+        //initialize the bot
+        int randIndex = rand(0, openCells.size()-1);
+        Cell bot = openCells.get(randIndex);
+        bot.isBot = true;
+
+        //initialize leak1
+        randIndex = rand(0, openCells.size()-1);
+        Cell leak1 = openCells.get(randIndex);
+        leak1.isLeak = true;
+        //if the leak spawns on the bot, ignore test case
+        if (bot.isLeak) {
+            numActions = null;
+            return;
+        }
+
+        //initialize leak2
+        Cell leak2 = null;
+        while (leak2 == null) {
+            randIndex = rand(0, openCells.size() - 1);
+            Cell tempLeak = openCells.get(randIndex);
+            if (!tempLeak.isLeak) leak2 = tempLeak;
+        }
+        leak2.isLeak = true;
+        //if the leak spawns on the bot, ignore test case
+        if (bot.isLeak) {
+            numActions = null;
+            return;
+        }
+
+        bot.noLeak = true;
+
+        //set initial probabilities to 2/(n * (n-1)) and randomly pick a max
+        int n = openCells.size() - 1; //(-1) to account for the bot initially not being the leak
+        double maxProbLeakPair = 2 / (double) (n * (n-1));
+
+        double sumProbLeak = 0.0;
+
+        for (int i = 0; i < openCells.size(); i++) {
+            Cell c1 = openCells.get(i);
+            HashMap<Cell, Double> pairsForGivenCell = new HashMap<>();
+            //for all cells before i, just use the previously calculated value
+            for (int j = 0; j < i; j++) {
+                Cell c2 = openCells.get(j);
+                if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
+                    sumProbLeak += pairings.get(c2).get(c1);
+                }
+            }
+            //for all cells after i, set the initial probability for the pair
+            for (int j = i + 1; j < openCells.size(); j++) {
+                Cell c2 = openCells.get(j);
+                if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
+                    pairsForGivenCell.put(c2, maxProbLeakPair);
+                    sumProbLeak += maxProbLeakPair;
+                }
+            }
+            pairings.put(c1, pairsForGivenCell);
+            //set P(L) for c1 to be the summation of all the pairings for c1
+            c1.setProbLeak(sumProbLeak);
+            sumProbLeak = 0.0;
+        }
+
+        bot.setProbLeak(0);
+        double maxProb;
+        Cell maxProbCell;
+        boolean performSense = true;
+
+        while (!bot.isLeak && leak1.isLeak && leak2.isLeak) {
+            //BFS Shortest Path from bot -> cell with highest P(L)
+            maxProb = 0.0;
+            maxProbCell = null;
+            for (Cell cell : openCells) {
+                if (maxProb < cell.getProbLeak()) {
+                    maxProb = cell.getProbLeak();
+                    maxProbCell = cell;
+                }
+            }
+            LinkedList<Cell> shortestPath = Bfs.SP_BFS(bot, maxProbCell);
+            if (shortestPath == null) {
+                numActions = null;
+                return;
+            }
+            shortestPath.removeFirst();
+
+            //move the bot one step toward cell with highest P(L)
+            Cell neighbor = shortestPath.removeFirst();
+            bot.isBot = false;
+            neighbor.isBot = true;
+            bot = neighbor;
+            numActions++;
+            Bfs.updateDistances(bot);
+
+            //if bot reached one of the leaks and both have not been plugged
+            if (bot.isLeak && leak1.isLeak && leak2.isLeak)
+                bot.isLeak = false;
+            //else if bot reached one of the leaks and the other has been plugged
+            //else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
+            bot.noLeak = true;
+
+            updateProb_Step_Bot8_MultipleLeaks(bot);
+
+            //Sense Action
+            if (bot.equals(maxProbCell)) {
+                if (performSense) {
+                    if (leak1.isLeak && leak2.isLeak)
+                        probSenseAction_Bot8_MultipleLeaks(bot, leak1, leak2);
+                    else if (leak1.isLeak)
+                        probSenseAction_Bot8(bot, leak1);
+                    else
+                        probSenseAction_Bot8(bot, leak2);
+                }
+                performSense = !performSense;
+            }
+        }
+
+        Cell leak;
+        if (leak1.isLeak) leak = leak1;
+        else leak = leak2;
+
+        //run bot 3
+        performSense = true;
+        while (!bot.isLeak) {
+            //BFS Shortest Path from bot -> cell with highest P(L)
+            maxProb = 0.0;
+            maxProbCell = null;
+            for (Cell cell : openCells) {
+                if (maxProb < cell.getProbLeak()) {
+                    maxProb = cell.getProbLeak();
+                    maxProbCell = cell;
+                }
+            }
+            LinkedList<Cell> shortestPath = Bfs.SP_BFS(bot, maxProbCell);
+            if (shortestPath == null) {
+                numActions = null;
+                return;
+            }
+            shortestPath.removeFirst();
+
+            //move the bot one step toward cell with highest P(L)
+            Cell neighbor = shortestPath.removeFirst();
+            bot.isBot = false;
+            neighbor.isBot = true;
+            bot = neighbor;
+            numActions++;
+            Bfs.updateDistances(bot);
+
+            if (bot.isLeak) return;
+
+            bot.noLeak = true;
+            updateProb_Step_Bot8(bot);
+
+            //Sense Action
+            if (bot.equals(maxProbCell)) {
+                if (performSense) probSenseAction_Bot8(bot, leak);
+                performSense = !performSense;
+            }
+        }
+    }
+
 }

@@ -243,8 +243,7 @@ public class ProbabilisticBots extends Main {
 
             //Sense Action
             if (bot.equals(maxProbCell)) {
-                if (performSense)
-                    probSenseAction(bot, leak);
+                if (performSense) probSenseAction(bot, leak);
                 performSense = !performSense;
             }
         }
