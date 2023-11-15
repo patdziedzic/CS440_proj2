@@ -408,26 +408,28 @@ public class MultipleLeaksBots extends DeterministicBots {
 
         for (int i = 0; i < openCells.size(); i++) {
             Cell c1 = openCells.get(i);
-            HashMap<Cell, Double> pairsForGivenCell = new HashMap<>();
-            //for all cells before i, just use the previously calculated value
-            for (int j = 0; j < i; j++) {
-                Cell c2 = openCells.get(j);
-                if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
-                    sumProbLeak += pairings.get(c2).get(c1);
+            if (!c1.equals(bot)) {
+                HashMap<Cell, Double> pairsForGivenCell = new HashMap<>();
+                //for all cells before i, just use the previously calculated value
+                for (int j = 0; j < i; j++) {
+                    Cell c2 = openCells.get(j);
+                    if (!c1.equals(c2) && !c2.equals(bot) && !c1.noLeak && !c2.noLeak) {
+                        sumProbLeak += pairings.get(c2).get(c1);
+                    }
                 }
-            }
-            //for all cells after i, set the initial probability for the pair
-            for (int j = i + 1; j < openCells.size(); j++) {
-                Cell c2 = openCells.get(j);
-                if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
-                    pairsForGivenCell.put(c2, maxProbLeakPair);
-                    sumProbLeak += maxProbLeakPair;
+                //for all cells after i, set the initial probability for the pair
+                for (int j = i + 1; j < openCells.size(); j++) {
+                    Cell c2 = openCells.get(j);
+                    if (!c1.equals(c2) && !c2.equals(bot) && !c1.noLeak && !c2.noLeak) {
+                        pairsForGivenCell.put(c2, maxProbLeakPair);
+                        sumProbLeak += maxProbLeakPair;
+                    }
                 }
+                pairings.put(c1, pairsForGivenCell);
+                //set P(L) for c1 to be the summation of all the pairings for c1
+                c1.setProbLeak(sumProbLeak);
+                sumProbLeak = 0.0;
             }
-            pairings.put(c1, pairsForGivenCell);
-            //set P(L) for c1 to be the summation of all the pairings for c1
-            c1.setProbLeak(sumProbLeak);
-            sumProbLeak = 0.0;
         }
 
         bot.setProbLeak(0);
@@ -764,26 +766,28 @@ public class MultipleLeaksBots extends DeterministicBots {
 
         for (int i = 0; i < openCells.size(); i++) {
             Cell c1 = openCells.get(i);
-            HashMap<Cell, Double> pairsForGivenCell = new HashMap<>();
-            //for all cells before i, just use the previously calculated value
-            for (int j = 0; j < i; j++) {
-                Cell c2 = openCells.get(j);
-                if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
-                    sumProbLeak += pairings.get(c2).get(c1);
+            if (!c1.equals(bot)) {
+                HashMap<Cell, Double> pairsForGivenCell = new HashMap<>();
+                //for all cells before i, just use the previously calculated value
+                for (int j = 0; j < i; j++) {
+                    Cell c2 = openCells.get(j);
+                    if (!c1.equals(c2) && !c2.equals(bot) && !c1.noLeak && !c2.noLeak) {
+                        sumProbLeak += pairings.get(c2).get(c1);
+                    }
                 }
-            }
-            //for all cells after i, set the initial probability for the pair
-            for (int j = i + 1; j < openCells.size(); j++) {
-                Cell c2 = openCells.get(j);
-                if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
-                    pairsForGivenCell.put(c2, maxProbLeakPair);
-                    sumProbLeak += maxProbLeakPair;
+                //for all cells after i, set the initial probability for the pair
+                for (int j = i + 1; j < openCells.size(); j++) {
+                    Cell c2 = openCells.get(j);
+                    if (!c1.equals(c2) && !c2.equals(bot) && !c1.noLeak && !c2.noLeak) {
+                        pairsForGivenCell.put(c2, maxProbLeakPair);
+                        sumProbLeak += maxProbLeakPair;
+                    }
                 }
+                pairings.put(c1, pairsForGivenCell);
+                //set P(L) for c1 to be the summation of all the pairings for c1
+                c1.setProbLeak(sumProbLeak);
+                sumProbLeak = 0.0;
             }
-            pairings.put(c1, pairsForGivenCell);
-            //set P(L) for c1 to be the summation of all the pairings for c1
-            c1.setProbLeak(sumProbLeak);
-            sumProbLeak = 0.0;
         }
 
         bot.setProbLeak(0);
