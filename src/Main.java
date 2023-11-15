@@ -98,85 +98,85 @@ public class Main {
     public static void main(String[] args) {
         //PART 1 - DETERMINISTIC LEAK DETECTORS
         //Bot 1
-//        System.out.println("Bot 1");
-//        k = 1; runTests(1);
-//        k = 5; runTests(1);
-//        k = 10; runTests(1);
-//        k = 15; runTests(1);
-//        k = 20; runTests(1);
-//        k = 24; runTests(1);
-//        System.out.println();
-//
-//        //Bot 2
-//        System.out.println("Bot 2");
-//        k = 1; runTests(2);
-//        k = 5; runTests(2);
-//        k = 10; runTests(2);
-//        k = 15; runTests(2);
-//        k = 20; runTests(2);
-//        k = 24; runTests(2);
-//        System.out.println();
-//
-//
-//        //PART 2 - PROBABILISTIC LEAK DETECTORS
-//        //Bot 3
-//        System.out.println("Bot 3");
-//        alpha = 0.2; runTests(3);
-//        alpha = 0.25; runTests(3);
-//        alpha = 0.3; runTests(3);
-//        alpha = 0.35; runTests(3);
-//        alpha = 0.4; runTests(3);
-//        alpha = 0.6; runTests(3);
-//        alpha = 0.8; runTests(3);
-//        alpha = 1; runTests(3);
-//        System.out.println();
-//
-//        //Bot 4
-//        System.out.println("Bot 4");
-//        alpha = 0.2; runTests(4);
-//        alpha = 0.25; runTests(4);
-//        alpha = 0.3; runTests(4);
-//        alpha = 0.35; runTests(4);
-//        alpha = 0.4; runTests(4);
-//        alpha = 0.6; runTests(4);
-//        alpha = 0.8; runTests(4);
-//        alpha = 1; runTests(4);
-//        System.out.println();
-//
-//
-//        //PART 3 - MULTIPLE LEAKS
-//        //Bot 5
-//        System.out.println("Bot 5");
-//        k = 1; runTests(5);
-//        k = 5; runTests(5);
-//        k = 10; runTests(5);
-//        k = 15; runTests(5);
-//        k = 20; runTests(5);
-//        k = 24; runTests(5);
-//        System.out.println();
-//
-//        //Bot 6
-//        System.out.println("Bot 6");
-//        k = 1; runTests(6);
-//        k = 5; runTests(6);
-//        k = 10; runTests(6);
-//        k = 15; runTests(6);
-//        k = 20; runTests(6);
-//        k = 24; runTests(6);
-//        System.out.println();
-//
-//
-//        //Bot 7
-//        System.out.println("Bot 7");
-//        alpha = 0.2; runTests(7);
-//        alpha = 0.25; runTests(7);
-//        alpha = 0.3; runTests(7);
-//        alpha = 0.35; runTests(7);
-//        alpha = 0.4; runTests(7);
-//        alpha = 0.6; runTests(7);
-//        alpha = 0.8; runTests(7);
-//        alpha = 1; runTests(7);
-//        System.out.println();
+        System.out.println("Bot 1");
+        k = 1; runTests(1);
+        k = 5; runTests(1);
+        k = 10; runTests(1);
+        k = 15; runTests(1);
+        k = 20; runTests(1);
+        k = 24; runTests(1);
+        System.out.println();
+
+        //Bot 2
+        System.out.println("Bot 2");
+        k = 1; runTests(2);
+        k = 5; runTests(2);
+        k = 10; runTests(2);
+        k = 15; runTests(2);
+        k = 20; runTests(2);
+        k = 24; runTests(2);
+        System.out.println();
+
+
+        //PART 2 - PROBABILISTIC LEAK DETECTORS
+        //Bot 3
+        System.out.println("Bot 3");
+        alpha = 0.2; runTests(3);
+        alpha = 0.25; runTests(3);
+        alpha = 0.3; runTests(3);
+        alpha = 0.35; runTests(3);
+        alpha = 0.4; runTests(3);
+        alpha = 0.6; runTests(3);
+        alpha = 0.8; runTests(3);
+        alpha = 1; runTests(3);
+        System.out.println();
+
+        //Bot 4
+        System.out.println("Bot 4");
+        alpha = 0.2; runTests(4);
+        alpha = 0.25; runTests(4);
+        alpha = 0.3; runTests(4);
+        alpha = 0.35; runTests(4);
+        alpha = 0.4; runTests(4);
+        alpha = 0.6; runTests(4);
+        alpha = 0.8; runTests(4);
+        alpha = 1; runTests(4);
+        System.out.println();
+
+
+        //PART 3 - MULTIPLE LEAKS
+        //Bot 5
+        System.out.println("Bot 5");
+        k = 1; runTests(5);
+        k = 5; runTests(5);
+        k = 10; runTests(5);
+        k = 15; runTests(5);
+        k = 20; runTests(5);
+        k = 24; runTests(5);
+        System.out.println();
+
+        //Bot 6
+        System.out.println("Bot 6");
+        k = 1; runTests(6);
+        k = 5; runTests(6);
+        k = 10; runTests(6);
+        k = 15; runTests(6);
+        k = 20; runTests(6);
+        k = 24; runTests(6);
+        System.out.println();
+
+
+        //Bot 7
+        System.out.println("Bot 7");
+        alpha = 0.2; runTests(7);
+        alpha = 0.25; runTests(7);
+        alpha = 0.3; runTests(7);
+        alpha = 0.35; runTests(7);
+        alpha = 0.4; runTests(7);
+        alpha = 0.6; runTests(7);
+        alpha = 0.8; runTests(7);
+        alpha = 1; runTests(7);
+        System.out.println();
 
         //Bot 8
         System.out.println("Bot 8");
