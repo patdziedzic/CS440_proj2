@@ -37,8 +37,6 @@ public class DeterministicBots extends Main {
         bot.noLeak = true;
         for (Cell cell : detSquare) cell.noLeak = true;
 
-        //Ship.printShip(ship);
-
         while (!bot.isLeak) {
             //BFS Shortest Path from bot -> nearest potential leak
             LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
@@ -47,8 +45,6 @@ public class DeterministicBots extends Main {
                 return;
             }
             shortestPath.removeFirst();
-
-            //System.out.println(numActions);
 
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
@@ -91,8 +87,6 @@ public class DeterministicBots extends Main {
         bot.noLeak = true;
         for (Cell cell : detSquare) cell.noLeak = true;
 
-        //Ship.printShip(ship);
-
         while (!bot.isLeak) {
             //BFS Shortest Path from bot -> nearest potential leak
             LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
@@ -101,8 +95,6 @@ public class DeterministicBots extends Main {
                 return;
             }
             shortestPath.removeFirst();
-
-            //System.out.println(numActions);
 
             //move the bot one step to the nearest potential leak
             Cell neighbor = shortestPath.removeFirst();
@@ -170,7 +162,7 @@ public class DeterministicBots extends Main {
      * Given a detection square, check if a leak was detected
      * @return true if a leak was detected
      */
-    private static boolean leakInSquare(LinkedList<Cell> detSquare) {
+    public static boolean leakInSquare(LinkedList<Cell> detSquare) {
         for (Cell cell : detSquare) {
             if (cell.isLeak) return true;
         }

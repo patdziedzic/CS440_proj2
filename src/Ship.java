@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Ship {
     //the ship layout - 2D array of Cell objects
-    public static final int D = 30;
+    public static final int D = 50;
     private static Cell[][] ship;
 
 

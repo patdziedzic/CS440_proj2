@@ -7,7 +7,6 @@ import java.util.LinkedList;
 public class MultipleLeaksBots extends DeterministicBots {
     private static HashMap<Cell, HashMap<Cell, Double>> pairings = new HashMap<>();
 
-
     /*
      * Run an experiment on Bot 5
      */
@@ -58,8 +57,6 @@ public class MultipleLeaksBots extends DeterministicBots {
         bot.noLeak = true;
         for (Cell cell : detSquare) cell.noLeak = true;
 
-        //Ship.printShip(ship);
-
         while (!bot.isLeak && (leak1.isLeak || leak2.isLeak)) {
             //BFS Shortest Path from bot -> nearest potential leak
             LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
@@ -69,21 +66,54 @@ public class MultipleLeaksBots extends DeterministicBots {
             }
             shortestPath.removeFirst();
 
-            //System.out.println(numActions);
-
             //move the bot to the nearest potential leak
             bot = moveBot(bot, shortestPath);
-            //if bot reached one of the leaks and both have not been plugged
-            if (bot.isLeak && leak1.isLeak && leak2.isLeak) {
-                bot.isLeak = false;
+            //if both leaks have not been plugged
+            if (leak1.isLeak && leak2.isLeak) {
+                //if bot reached one of the leaks
+                if (bot.isLeak) bot.isLeak = false;
                 bot.noLeak = true;
+                detSenseAction_MultipleLeaks(bot, leak1, leak2);
             }
-            //else if bot reached one of the leaks and the other has been plugged
-            else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
-            else bot.noLeak = true;
+            else {
+                //if bot reached one of the leaks and the other has been plugged
+                if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
+                bot.noLeak = true;
+                detSenseAction(bot);
+            }
+        }
+    }
 
-            //Sense Action
-            detSenseAction(bot);
+    /**
+     * Deterministic Sense Action for Multiple Leaks (update cells accordingly)
+     */
+    public static void detSenseAction_MultipleLeaks(Cell bot, Cell leak1, Cell leak2) {
+        LinkedList<Cell> detSquare = getDetectionSquare(bot);
+        numActions++;
+        if (!leakInSquare(detSquare)) {
+            //set noLeak = true for everything in the square
+            for (Cell cell : detSquare) cell.noLeak = true;
+        }
+        else {
+            //leak detected --> look only at the cells within the detection square
+            while (!bot.isLeak) {
+                //BFS Shortest Path from bot -> nearest potential leak in square
+                LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot, detSquare);
+                if (shortestPath == null) return;
+                shortestPath.removeFirst();
+
+                //move the bot to the nearest potential leak
+                bot = moveBot(bot, shortestPath);
+                //if bot reached one of the leaks and both have not been plugged
+                if (bot.isLeak && leak1.isLeak && leak2.isLeak) {
+                    bot.isLeak = false;
+                    bot.noLeak = true;
+                    return;
+                }
+                //else if bot reached one of the leaks and the other has been plugged
+                else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
+                else bot.noLeak = true;
+            }
         }
     }
 
@@ -137,8 +167,6 @@ public class MultipleLeaksBots extends DeterministicBots {
         bot.noLeak = true;
         for (Cell cell : detSquare) cell.noLeak = true;
 
-        //Ship.printShip(ship);
-
         while (!bot.isLeak && (leak1.isLeak || leak2.isLeak)) {
             //BFS Shortest Path from bot -> nearest potential leak
             LinkedList<Cell> shortestPath = Bfs.detSP_BFS(bot);
@@ -148,8 +176,6 @@ public class MultipleLeaksBots extends DeterministicBots {
             }
             shortestPath.removeFirst();
 
-            //System.out.println(numActions);
-
             //move the bot one step to the nearest potential leak
             Cell neighbor = shortestPath.removeFirst();
             bot.isBot = false;
@@ -157,22 +183,21 @@ public class MultipleLeaksBots extends DeterministicBots {
             bot = neighbor;
             numActions++;
 
-            //if bot reached one of the leaks and both have not been plugged
-            if (bot.isLeak && leak1.isLeak && leak2.isLeak) {
-                bot.isLeak = false;
+            //if both leaks have not been plugged
+            if (leak1.isLeak && leak2.isLeak) {
+                //if bot reached one of the leaks
+                if (bot.isLeak) bot.isLeak = false;
                 bot.noLeak = true;
+                detSenseAction_MultipleLeaks(bot, leak1, leak2);
             }
-            //else if bot reached one of the leaks and the other has been plugged
-            else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
-            else bot.noLeak = true;
-
-            //Sense Action
-            detSenseAction(bot);
+            else {
+                //if bot reached one of the leaks and the other has been plugged
+                if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
+                bot.noLeak = true;
+                detSenseAction(bot);
+            }
         }
     }
-
-
-
 
 
     /**
@@ -220,8 +245,6 @@ public class MultipleLeaksBots extends DeterministicBots {
         bot.setProbLeak(0);
         Cell maxProbCell;
 
-        //Ship.printShip(ship);
-
         while (!bot.isLeak && (leak1.isLeak || leak2.isLeak)) {
             //BFS Shortest Path from bot -> cell with highest P(L)
             maxProb = 0.0;
@@ -256,17 +279,16 @@ public class MultipleLeaksBots extends DeterministicBots {
             else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
             else bot.noLeak = true;
 
-            bot.setProbLeak(0);
-            updateProb_Step_Bot7(bot);
+            updateProb_Step(bot);
 
             //Sense Action
             if (bot.equals(maxProbCell)) {
                 if (leak1.isLeak && leak2.isLeak)
                     probSenseAction_Bot7(bot, leak1, leak2);
                 else if (leak1.isLeak)
-                    probSenseAction_Bot7(bot, leak1);
+                    probSenseAction(bot, leak1);
                 else
-                    probSenseAction_Bot7(bot, leak2);
+                    probSenseAction(bot, leak2);
             }
         }
     }
@@ -274,12 +296,9 @@ public class MultipleLeaksBots extends DeterministicBots {
     /**
      * Update P(L) for each cell after taking a step
      */
-    private static void updateProb_Step_Bot7(Cell bot) {
-        //update P(L) for each cell j to be P(leak in cell j | leak is not in bot)
-        // --> conditional probability formula
-        // --> marginalization
-        // --> conditional factoring
-        // --> = P(leak in cell j) / P(leak is not in bot)
+    private static void updateProb_Step(Cell bot) {
+        //update P(L) for each cell j to be P(leak in cell j | leak is not in bot cell)
+        // --> = P(leak in cell j) / [1 - P(leak is in bot cell)]
         double denominator = 1 - bot.getProbLeak();
 
         //calculate and store the new values
@@ -292,12 +311,14 @@ public class MultipleLeaksBots extends DeterministicBots {
         for (Cell cell : openCells) {
             cell.setProbLeak(newValues[cell.getRow()][cell.getCol()]);
         }
+
+        bot.setProbLeak(0);
     }
 
     /**
      * Update P(L) for each cell after a sense action
      */
-    private static void updateProb_Sense_Bot7(double probB) {
+    private static void updateProb_Sense(double probB) {
         //calculate the denominator
         double denominator = 0.0;
         for (Cell cell : openCells) {
@@ -319,22 +340,19 @@ public class MultipleLeaksBots extends DeterministicBots {
     /**
      * Sense the leak and update based on whether a beep was heard
      */
-    private static void probSenseAction_Bot7(Cell bot, Cell leak) {
+    private static void probSenseAction(Cell bot, Cell leak) {
         //sense action
         bot.setBeepProb(leak);
         boolean beep = Math.random() <= bot.getBeepProb(); //true if beep occurred
         numActions++;
 
-        //update P(L) for each cell j to be P(leak in cell j | B/~B in bot cell)
-        // --> conditional probability formula
-        // --> marginalization
-        // --> conditional factoring
-        // --> = P(L in j)*P(B/~B in bot | L in leak cell) / summation{P(L in j)*P(B/~B in bot | L in leak cell)}
+        //update P(L) for each cell j to be P(Lj | B/~B in i)
+        // --> = P(Lj)*P(B/~B in i | Lj) / summation{P(Lj')*P(B/~B in i | Lj')}
         if (beep) {
-            updateProb_Sense_Bot7(bot.getBeepProb());
+            updateProb_Sense(bot.getBeepProb());
         }
         else {
-            updateProb_Sense_Bot7(1 - bot.getBeepProb());
+            updateProb_Sense(1 - bot.getBeepProb());
         }
     }
 
@@ -349,16 +367,13 @@ public class MultipleLeaksBots extends DeterministicBots {
         boolean beep2 = Math.random() <= bot.getBeepProb(); //true if beep occurred
         numActions++;
 
-        //update P(L) for each cell j to be P(leak in cell j | B/~B in bot cell)
-        // --> conditional probability formula
-        // --> marginalization
-        // --> conditional factoring
-        // --> = P(L in j)*P(B/~B in bot | L in leak cell) / summation{P(L in j)*P(B/~B in bot | L in leak cell)}
+        //update P(L) for each cell j to be P(Lj | B/~B in i)
+        // --> = P(Lj)*P(B/~B in i | Lj) / summation{P(Lj')*P(B/~B in i | Lj')}
         if (beep1 || beep2) { // if either leak caused a beep
-            updateProb_Sense_Bot7(bot.getBeepProb());
+            updateProb_Sense(bot.getBeepProb());
         }
         else {
-            updateProb_Sense_Bot7(1 - bot.getBeepProb());
+            updateProb_Sense(1 - bot.getBeepProb());
         }
     }
 
@@ -414,6 +429,7 @@ public class MultipleLeaksBots extends DeterministicBots {
                 for (int j = 0; j < i; j++) {
                     Cell c2 = openCells.get(j);
                     if (!c1.equals(c2) && !c2.equals(bot) && !c1.noLeak && !c2.noLeak) {
+                        pairsForGivenCell.put(c2, pairings.get(c2).get(c1));
                         sumProbLeak += pairings.get(c2).get(c1);
                     }
                 }
@@ -464,20 +480,18 @@ public class MultipleLeaksBots extends DeterministicBots {
             //if bot reached one of the leaks and both have not been plugged
             if (bot.isLeak && leak1.isLeak && leak2.isLeak)
                 bot.isLeak = false;
-            //else if bot reached one of the leaks and the other has been plugged
-            //else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
-            bot.noLeak = true;
 
-            updateProb_Step_Bot8_MultipleLeaks(bot);
+            bot.noLeak = true;
+            updateProb_Step_Bot8(bot);
 
             //Sense Action
             if (bot.equals(maxProbCell)) {
                 if (leak1.isLeak && leak2.isLeak)
-                    probSenseAction_Bot8_MultipleLeaks(bot, leak1, leak2);
+                    probSenseAction_Bot8(bot, leak1, leak2);
                 else if (leak1.isLeak)
-                    probSenseAction_Bot8(bot, leak1);
+                    probSenseAction(bot, leak1);
                 else
-                    probSenseAction_Bot8(bot, leak2);
+                    probSenseAction(bot, leak2);
             }
         }
 
@@ -485,7 +499,7 @@ public class MultipleLeaksBots extends DeterministicBots {
         if (leak1.isLeak) leak = leak1;
         else leak = leak2;
 
-        //run bot 3
+        //run bot 3 algorithm
         while (!bot.isLeak) {
             //BFS Shortest Path from bot -> cell with highest P(L)
             maxProb = 0.0;
@@ -514,98 +528,20 @@ public class MultipleLeaksBots extends DeterministicBots {
             if (bot.isLeak) return;
 
             bot.noLeak = true;
-            updateProb_Step_Bot8(bot);
+            updateProb_Step(bot);
 
             //Sense Action
             if (bot.equals(maxProbCell))
-                probSenseAction_Bot8(bot, leak);
+                probSenseAction(bot, leak);
         }
     }
 
     /**
-     * Update P(L) for each cell after taking a step
+     * Update P(Lj, Lk) for each pairing after taking a step
      */
     private static void updateProb_Step_Bot8(Cell bot) {
-        //update P(L) for each cell j to be P(leak in cell j | leak is not in bot)
-        // --> conditional probability formula
-        // --> marginalization
-        // --> conditional factoring
-        // --> = P(leak in cell j) / P(leak is not in bot)
+        //update P(Lj, Lk) for each pairing to be P(Lj, Lk) / [1 - P(Li)]
         double denominator = 1 - bot.getProbLeak();
-
-        //calculate and store the new values
-        double[][] newValues = new double[Ship.D][Ship.D];
-        for (Cell cell : openCells) {
-            newValues[cell.getRow()][cell.getCol()] = cell.getProbLeak() / denominator;
-        }
-
-        //copy over the new values to the cells
-        for (Cell cell : openCells) {
-            cell.setProbLeak(newValues[cell.getRow()][cell.getCol()]);
-        }
-
-        bot.setProbLeak(0);
-    }
-
-    /**
-     * Update P(L) for each cell after a sense action
-     */
-    private static void updateProb_Sense_Bot8(double probB) {
-        //calculate the denominator
-        double denominator = 0.0;
-        for (Cell cell : openCells) {
-            denominator += cell.getProbLeak() * probB;
-        }
-
-        //calculate and store the new values
-        double[][] newValues = new double[Ship.D][Ship.D];
-        for (Cell cell : openCells) {
-            newValues[cell.getRow()][cell.getCol()] = (cell.getProbLeak() * probB) / denominator;
-        }
-
-        //copy over the new values to the cells
-        for (Cell cell : openCells) {
-            cell.setProbLeak(newValues[cell.getRow()][cell.getCol()]);
-        }
-    }
-
-    /**
-     * Sense the leak and update based on whether a beep was heard
-     */
-    private static void probSenseAction_Bot8(Cell bot, Cell leak) {
-        //sense action
-        bot.setBeepProb(leak);
-        boolean beep = Math.random() <= bot.getBeepProb(); //true if beep occurred
-        numActions++;
-
-        //update P(L) for each cell j to be P(leak in cell j | B/~B in bot cell)
-        // --> conditional probability formula
-        // --> marginalization
-        // --> conditional factoring
-        // --> = P(L in j)*P(B/~B in bot | L in leak cell) / summation{P(L in j)*P(B/~B in bot | L in leak cell)}
-        if (beep) {
-            updateProb_Sense_Bot8(bot.getBeepProb());
-        }
-        else {
-            updateProb_Sense_Bot8(1 - bot.getBeepProb());
-        }
-    }
-
-    /**
-     * Update P(L) for each cell after taking a step
-     */
-    private static void updateProb_Step_Bot8_MultipleLeaks(Cell bot) {
-        //update P(L) for each cell j to be P(leak in cell j | leak is not in bot)
-        // --> conditional probability formula
-        // --> marginalization
-        // --> conditional factoring
-        // --> = P(leak in cell j) / P(leak is not in bot)
-        double denominator = 1 - bot.getProbLeak();
-
-        //calculate and store the new values
-
-        //divide by denominator for each pairing
-        //if pairing contains bot (c), then make it 0 or something, or don't include it
 
         HashMap<Cell, HashMap<Cell, Double>> newPairings = new HashMap<>();
         double sumProbLeak = 0.0;
@@ -617,7 +553,7 @@ public class MultipleLeaksBots extends DeterministicBots {
                 for (int j = 0; j < i; j++) {
                     Cell c2 = openCells.get(j);
                     if (!c2.equals(bot) && !c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
-                        pairsForGivenCell.put(c2, pairings.get(c1).get(c2));
+                        pairsForGivenCell.put(c2, pairings.get(c2).get(c1));
                         sumProbLeak += pairings.get(c2).get(c1);
                     }
                 }
@@ -625,6 +561,7 @@ public class MultipleLeaksBots extends DeterministicBots {
                 for (int j = i + 1; j < openCells.size(); j++) {
                     Cell c2 = openCells.get(j);
                     if (!c2.equals(bot) && !c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
+                        //divide by denominator for each pairing
                         double newProb = pairings.get(c1).get(c2) / denominator;
                         pairsForGivenCell.put(c2, newProb);
                         sumProbLeak += newProb;
@@ -642,9 +579,9 @@ public class MultipleLeaksBots extends DeterministicBots {
     }
 
     /**
-     * Update P(L) for each cell after a sense action
+     * Update P(Lj, Lk) for each pairing after a sense action
      */
-    private static void updateProb_Sense_Bot8_MultipleLeaks(double probB) {
+    private static void updateProb_Sense_Bot8(double probB) {
         //calculate the denominator
         double denominator = 0.0;
         for (int i = 0; i < openCells.size(); i++) {
@@ -667,7 +604,7 @@ public class MultipleLeaksBots extends DeterministicBots {
             for (int j = 0; j < i; j++) {
                 Cell c2 = openCells.get(j);
                 if (!c1.equals(c2) && !c1.noLeak && !c2.noLeak) {
-                    pairsForGivenCell.put(c2, pairings.get(c1).get(c2));
+                    pairsForGivenCell.put(c2, pairings.get(c2).get(c1));
                     sumProbLeak += pairings.get(c2).get(c1);
                 }
             }
@@ -691,7 +628,7 @@ public class MultipleLeaksBots extends DeterministicBots {
     /**
      * Sense the leak and update based on whether a beep was heard given multiple leaks
      */
-    private static void probSenseAction_Bot8_MultipleLeaks(Cell bot, Cell leak1, Cell leak2) {
+    private static void probSenseAction_Bot8(Cell bot, Cell leak1, Cell leak2) {
         //sense action
         bot.setBeepProb(leak1);
         double prob1 = bot.getBeepProb();
@@ -703,20 +640,16 @@ public class MultipleLeaksBots extends DeterministicBots {
 
         numActions++;
 
-        //update P(L) for each cell j to be P(leak in cell j | B/~B in bot cell)
-        // --> conditional probability formula
-        // --> marginalization
-        // --> conditional factoring
-        // --> = P(L in j)*P(B/~B in bot | L in leak cell) / summation{P(L in j)*P(B/~B in bot | L in leak cell)}
+        //update P(Lj, Lk) for each cell based on if the sensor beeped or didn't beep
         if (beep1 || beep2) { // if either leak caused a beep
             //P(B in i | L in j and L in k)
             bot.setBeepProb(1 - ( (1-prob1) * (1-prob2) ));
-            updateProb_Sense_Bot8_MultipleLeaks(bot.getBeepProb());
+            updateProb_Sense_Bot8(bot.getBeepProb());
         }
         else {
             //P(~B in i | L in j and L in k)
             bot.setBeepProb((1-prob1) * (1-prob2));
-            updateProb_Sense_Bot8_MultipleLeaks(1 - bot.getBeepProb());
+            updateProb_Sense_Bot8(1 - bot.getBeepProb());
         }
     }
 
@@ -772,6 +705,7 @@ public class MultipleLeaksBots extends DeterministicBots {
                 for (int j = 0; j < i; j++) {
                     Cell c2 = openCells.get(j);
                     if (!c1.equals(c2) && !c2.equals(bot) && !c1.noLeak && !c2.noLeak) {
+                        pairsForGivenCell.put(c2, pairings.get(c2).get(c1));
                         sumProbLeak += pairings.get(c2).get(c1);
                     }
                 }
@@ -823,21 +757,19 @@ public class MultipleLeaksBots extends DeterministicBots {
             //if bot reached one of the leaks and both have not been plugged
             if (bot.isLeak && leak1.isLeak && leak2.isLeak)
                 bot.isLeak = false;
-            //else if bot reached one of the leaks and the other has been plugged
-            //else if (bot.isLeak && (leak1.isLeak ^ leak2.isLeak)) return;
-            bot.noLeak = true;
 
-            updateProb_Step_Bot8_MultipleLeaks(bot);
+            bot.noLeak = true;
+            updateProb_Step_Bot8(bot);
 
             //Sense Action
             if (bot.equals(maxProbCell)) {
                 if (performSense) {
                     if (leak1.isLeak && leak2.isLeak)
-                        probSenseAction_Bot8_MultipleLeaks(bot, leak1, leak2);
+                        probSenseAction_Bot8(bot, leak1, leak2);
                     else if (leak1.isLeak)
-                        probSenseAction_Bot8(bot, leak1);
+                        probSenseAction(bot, leak1);
                     else
-                        probSenseAction_Bot8(bot, leak2);
+                        probSenseAction(bot, leak2);
                 }
                 performSense = !performSense;
             }
@@ -847,7 +779,7 @@ public class MultipleLeaksBots extends DeterministicBots {
         if (leak1.isLeak) leak = leak1;
         else leak = leak2;
 
-        //run bot 3
+        //run bot 4 algorithm
         performSense = true;
         while (!bot.isLeak) {
             //BFS Shortest Path from bot -> cell with highest P(L)
@@ -877,11 +809,11 @@ public class MultipleLeaksBots extends DeterministicBots {
             if (bot.isLeak) return;
 
             bot.noLeak = true;
-            updateProb_Step_Bot8(bot);
+            updateProb_Step(bot);
 
             //Sense Action
             if (bot.equals(maxProbCell)) {
-                if (performSense) probSenseAction_Bot8(bot, leak);
+                if (performSense) probSenseAction(bot, leak);
                 performSense = !performSense;
             }
         }

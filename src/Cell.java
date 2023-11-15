@@ -24,9 +24,9 @@ public class Cell {
     public int distFromBot;
 
     //PROBABILITIES
-    private double probLeak; //P(Leak) which is updated to P(L|B) or P(L|~B) each sense action
+    private double probLeak; //P(L) or P(leak in this cell) which is updated to P(L|B) or P(L|~B) each sense action
     //^ for multiple leaks, this is the summation of all the pairings
-    private double beepProb; //P(Beep in cell i | Leak in cell j)
+    private double beepProb; //P(Beep in cell i | Leak in cell j) or P(B | Lj, Lk) for multiple leaks
 
 
     /**
